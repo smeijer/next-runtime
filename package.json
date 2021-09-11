@@ -9,7 +9,7 @@
     "build": "rimraf ./lib *.tsbuildinfo && tsc",
     "prepare": "npm run build",
     "lint": "eslint",
-    "postversion": "cp README.md package.json lib",
+    "postversion": "cp docs README.md package.json lib",
     "test": "",
     "release": "np --contents=./lib --message='release: cut the `%s` release' --no-yarn"
   },
