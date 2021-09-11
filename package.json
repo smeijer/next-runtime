@@ -1,9 +1,10 @@
 {
-  "name": "serverside",
+  "name": "next-runtime",
   "description": "handler to improve data handling in Next.js getServerSideProps",
   "author": "Stephan Meijer <stephan@meijer.ws>",
   "version": "0.0.0",
   "private": false,
+  "repository": "https://github.com/smeijer/next-runtime",
   "scripts": {
     "build": "rimraf ./lib *.tsbuildinfo && tsc",
     "prepare": "npm run build",
