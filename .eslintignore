@@ -1,0 +1,8 @@
+.cache
+dist
+cypress
+
+/.coverage
+/.next
+/dist
+/build
