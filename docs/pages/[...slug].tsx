@@ -229,7 +229,7 @@ export default function DocsPage({ source, frontMatter, next, prev, page }) {
             <div className="mt-12 pt-8 flex justify-end items-center text-gray-700 border-t border-gray-200">
               <a
                 className="flex items-center px-4 py-2 rounded-lg hover:opacity-60"
-                href={`https://github.com/smeijer/next-runtime/edit/main/docs/${page.slug}.mdx`}
+                href={`https://github.com/smeijer/next-runtime/edit/main/docs/content/${page.slug}.mdx`}
               >
                 Edit this page on GitHub
               </a>
