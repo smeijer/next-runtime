@@ -23,24 +23,43 @@ export type File = {
 
 export type BodyParserOptions = {
   limits?: {
-    // The maximum number of files a user can upload. Note that empty file
-    // fields, still count against the file count limit.
+    /**
+     * The maximum number of files a user can upload. Note that empty file
+     * fields, still count against the file count limit.
+     */
     fileCount?: number;
-    // The maximum size per file in bytes.
+
+    /**
+     * The maximum size per file in bytes.
+     */
     fileSize?: number | string;
-    // The maximum size of text fields.
+
+    /**
+     * The maximum size of text fields.
+     */
     fieldSize?: number | string;
-    // The maximum size of json payloads.
+
+    /**
+     * The maximum size of json payloads.
+     */
     jsonSize?: number | string;
 
-    // A valid HTML accept string to restrict mime-types.
-    // See https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept
+    /**
+     * A valid HTML accept string to restrict mime-types.
+     * See https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept
+     */
     mimeType?: string;
   };
-  // The directory where files will be stored. Defaults to the os.tmpdir
+
+  /**
+   * The directory where files will be stored. Defaults to the os.tmpdir
+   */
   uploadDir?: string;
-  // Handle the file streams, and pipe them to S3, file system, or whatever.
-  // When using this, files will no longer be written to the file system.
+
+  /**
+   * Handle the file streams, and pipe them to S3, file system, or whatever.
+   * When using this, files will no longer be written to the file system.
+   */
   onFile?: (params: {
     field: string;
     file: File;
