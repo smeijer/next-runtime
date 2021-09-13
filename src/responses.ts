@@ -1,16 +1,15 @@
 import { IncomingHttpHeaders } from 'http';
 
-import { USE_ASYNC_LOCAL_STORAGE } from './lib/flags';
+import { assertEnabled, USE_ASYNC_LOCAL_STORAGE } from './lib/flags';
 import { asyncLocalStorage } from './runtime/local-storage';
 
 function setHeaders(headers: IncomingHttpHeaders) {
   if (!headers) return;
 
-  if (!USE_ASYNC_LOCAL_STORAGE) {
-    throw new Error(
-      'this function is currently unsupported, waiting for asyncLocalStorage',
-    );
-  }
+  assertEnabled(
+    USE_ASYNC_LOCAL_STORAGE,
+    'this features requires node 16.4 or higher',
+  );
 
   const { res } = asyncLocalStorage.getStore();
 
