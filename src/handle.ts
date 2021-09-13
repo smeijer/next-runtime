@@ -72,7 +72,8 @@ export function handle<
 
       const result = await handlers[method](context);
 
-      switch (accept.type(['json', 'html'])) {
+      // Note, we can't make this api first. That will break shallow rerender
+      switch (accept.type(['html', 'json'])) {
         case 'html': {
           res.setHeader('content-type', 'text/html');
           return result;
