@@ -9,6 +9,20 @@
   "imageSize": 100,
   "commit": true,
   "commitConvention": "angular",
-  "contributors": [],
+  "contributors": [
+    {
+      "login": "smeijer",
+      "name": "Stephan Meijer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1196524?v=4",
+      "profile": "https://github.com/smeijer",
+      "contributions": [
+        "code",
+        "doc",
+        "ideas",
+        "infra",
+        "maintenance"
+      ]
+    }
+  ],
   "contributorsPerLine": 7
 }
