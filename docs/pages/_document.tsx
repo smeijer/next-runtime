@@ -1,6 +1,7 @@
 import withTwindDocument from '@twind/next/shim/document';
 import Document, { Head, Html, Main, NextScript } from 'next/document';
 
+import GoogleAnalytics from '../components/google-analytics';
 import twindConfig from '../twind.config';
 
 class MyDocument extends Document {
@@ -17,6 +18,7 @@ class MyDocument extends Document {
         <body>
           <Main />
           <NextScript />
+          <GoogleAnalytics />
         </body>
       </Html>
     );

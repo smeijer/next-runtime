@@ -2,8 +2,6 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   HamburgerMenuIcon,
-  Pencil1Icon,
-  Pencil2Icon,
 } from '@modulz/radix-icons';
 import cn from 'classnames';
 import clsx from 'clsx';
@@ -21,7 +19,9 @@ import { renderToString } from 'react-dom/server';
 import _slugify from 'slugify';
 
 import Code from '../components/code';
+import SocialHead from '../components/social-head';
 import toc, { TocLink } from '../content/toc';
+import { absoluteUrl } from '../lib/absolute-url';
 
 export function slugify(name) {
   name = renderToString(name)
@@ -134,105 +134,108 @@ export default function DocsPage({ source, frontMatter, next, prev, page }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Head>
-        <title>{frontMatter.pageTitle || frontMatter.title}</title>
-      </Head>
-
-      <div className="flex flex-auto w-full max-w-6xl mx-auto px-4">
-        <div
-          className={cn(
-            'flex-none z-10 fixed top-0 left-0 bottom-0 md:w-64 md:relative flex bg-opacity-25 bg-black',
-            {
-              'w-full': menuOpen,
-              'w-0': !menuOpen,
-            },
-          )}
-          onClick={() => {
-            setMenuOpen(false);
-          }}
-        >
-          <aside
+    <>
+      <SocialHead
+        title={`${frontMatter.pageTitle || frontMatter.title} — next-runtime`}
+        description="All you need to handle POST requests, file uploads, and api requests, in Next.js getServerSideProps."
+        url={absoluteUrl(page.slug)}
+      />
+      <div className="flex flex-col min-h-screen">
+        <div className="flex flex-auto w-full max-w-6xl mx-auto px-4">
+          <div
             className={cn(
-              'flex-none w-64 bg-white border-r border-gray-200 py-8 overflow-y-auto transition md:translate-x-0',
+              'flex-none z-10 fixed top-0 left-0 bottom-0 md:w-64 md:relative flex bg-opacity-25 bg-black',
               {
-                '-translate-x-64': !menuOpen,
-                'translate-x-0': menuOpen,
+                'w-full': menuOpen,
+                'w-0': !menuOpen,
               },
             )}
+            onClick={() => {
+              setMenuOpen(false);
+            }}
           >
-            <h1 className="w-full px-4 py-2 text-2xl font-light">
-              <Link href="/">next-runtime</Link>
-            </h1>
+            <aside
+              className={cn(
+                'flex-none w-64 bg-white border-r border-gray-200 py-8 overflow-y-auto transition md:translate-x-0',
+                {
+                  '-translate-x-64': !menuOpen,
+                  'translate-x-0': menuOpen,
+                },
+              )}
+            >
+              <h1 className="w-full px-4 py-2 text-2xl font-light">
+                <Link href="/">next-runtime</Link>
+              </h1>
 
-            {toc.map((entry, idx) =>
-              'caption' in entry ? (
-                <NavCaption key={`${idx}-${entry.caption}`} className="mt-8">
-                  {entry.caption}
-                </NavCaption>
-              ) : (
-                <NavLink key={`${idx}-${entry.slug}`} href={`/${entry.slug}`}>
-                  {entry.title}
-                </NavLink>
-              ),
-            )}
-          </aside>
-        </div>
-
-        <button
-          onClick={() => setMenuOpen((open) => !open)}
-          className="z-50 md:hidden bg-gray-800 hover:bg-gray-900 text-white fixed w-12 h-12 shadow-lg rounded-full bottom-6 right-6 flex items-center justify-center focus:outline-none"
-        >
-          <HamburgerMenuIcon />
-        </button>
-
-        <div className="overflow-x-hidden px-8 pb-16 mx-auto w-full max-w-prose">
-          <h1 className="text-5xl tracking-tight font-light mt-8 mb-6 relative text-gray-900">
-            {frontMatter.title}
-          </h1>
-
-          <main className="flex-auto w-full prose mdx">
-            {frontMatter.description && (
-              <p className="pb-">{frontMatter.description}</p>
-            )}
-            <MDXRemote {...source} components={components} />
-          </main>
-
-          <div className="mt-16 pt-8 flex justify-between items-center text-blue-600">
-            {prev ? (
-              <Link href={`/${prev.slug}`}>
-                <a className="flex items-center px-4 py-2 rounded-lg hover:bg-blue-50">
-                  <ChevronLeftIcon className="mr-2" />
-                  {prev.title}
-                </a>
-              </Link>
-            ) : (
-              <div />
-            )}
-
-            {next ? (
-              <Link href={`/${next.slug}`}>
-                <a className="flex items-center px-4 py-2 rounded-lg hover:bg-blue-50">
-                  {next.title}
-                  <ChevronRightIcon className="ml-2" />
-                </a>
-              </Link>
-            ) : (
-              <div />
-            )}
+              {toc.map((entry, idx) =>
+                'caption' in entry ? (
+                  <NavCaption key={`${idx}-${entry.caption}`} className="mt-8">
+                    {entry.caption}
+                  </NavCaption>
+                ) : (
+                  <NavLink key={`${idx}-${entry.slug}`} href={`/${entry.slug}`}>
+                    {entry.title}
+                  </NavLink>
+                ),
+              )}
+            </aside>
           </div>
 
-          <div className="mt-12 pt-8 flex justify-end items-center text-gray-700 border-t border-gray-200">
-            <a
-              className="flex items-center px-4 py-2 rounded-lg hover:opacity-60"
-              href={`https://github.com/smeijer/next-runtime/edit/main/docs/${page.slug}.mdx`}
-            >
-              Edit this page on GitHub
-            </a>
+          <button
+            onClick={() => setMenuOpen((open) => !open)}
+            className="z-50 md:hidden bg-gray-800 hover:bg-gray-900 text-white fixed w-12 h-12 shadow-lg rounded-full bottom-6 right-6 flex items-center justify-center focus:outline-none"
+          >
+            <HamburgerMenuIcon />
+          </button>
+
+          <div className="overflow-x-hidden px-8 pb-16 mx-auto w-full max-w-prose">
+            <h1 className="text-5xl tracking-tight font-light mt-8 mb-6 relative text-gray-900">
+              {frontMatter.title}
+            </h1>
+
+            <main className="flex-auto w-full prose mdx">
+              {frontMatter.description && (
+                <p className="pb-">{frontMatter.description}</p>
+              )}
+              <MDXRemote {...source} components={components} />
+            </main>
+
+            <div className="mt-16 pt-8 flex justify-between items-center text-blue-600">
+              {prev ? (
+                <Link href={`/${prev.slug}`}>
+                  <a className="flex items-center px-4 py-2 rounded-lg hover:bg-blue-50">
+                    <ChevronLeftIcon className="mr-2" />
+                    {prev.title}
+                  </a>
+                </Link>
+              ) : (
+                <div />
+              )}
+
+              {next ? (
+                <Link href={`/${next.slug}`}>
+                  <a className="flex items-center px-4 py-2 rounded-lg hover:bg-blue-50">
+                    {next.title}
+                    <ChevronRightIcon className="ml-2" />
+                  </a>
+                </Link>
+              ) : (
+                <div />
+              )}
+            </div>
+
+            <div className="mt-12 pt-8 flex justify-end items-center text-gray-700 border-t border-gray-200">
+              <a
+                className="flex items-center px-4 py-2 rounded-lg hover:opacity-60"
+                href={`https://github.com/smeijer/next-runtime/edit/main/docs/${page.slug}.mdx`}
+              >
+                Edit this page on GitHub
+              </a>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
