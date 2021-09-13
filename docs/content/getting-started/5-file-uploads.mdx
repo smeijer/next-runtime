@@ -9,14 +9,14 @@ You thought handling post data and zero-config api routes are awesome? How about
 To enable file uploads, we'll accompany the `post` handler with an `upload` handler. Together, they'll be responsible for handling multipart form submissions.
 
 ```js
-import fs from 'fs'
+import fs from 'fs';
 import { handle, json } from 'next-runtime';
 
 export const getServerSideProps = handle({
   async upload({ file, stream }) {
     stream.pipe(fs.createWriteStream(`/uploads/${file.name}`));
   },
-  
+
   async post({ req: { body } }) {
     return json({ message: 'Thanks, file accepted!' });
   },
@@ -32,11 +32,11 @@ Possibly unnecessary, but here's a form that could be submitting data to this ha
 ```jsx
 export default function MyPage({ name, message }) {
   if (message) {
-    return <p>{message}</p>
+    return <p>{message}</p>;
   }
 
   return (
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" encType="multipart/form-data">
       <input name="file" type="file" />
       <button type="submit">submit</button>
     </form>
@@ -44,7 +44,6 @@ export default function MyPage({ name, message }) {
 }
 ```
 
-Don't forget to specify `enctype="multipart/form-data"` when adding file inputs.
+Don't forget to specify `encType="multipart/form-data"` when adding file inputs.
 
 Just as with the standard `post` handler, this form can be upgraded to a `Form` as well. Please see [data updates - upgrading to form](/getting-started/4-data-updates#upgrading-to-form) for how to do that.
-

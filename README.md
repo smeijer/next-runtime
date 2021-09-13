@@ -48,7 +48,7 @@ export default function Home({ name, message }) {
   }
 
   return (
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" encType="multipart/form-data">
       <input name="name" defaultValue={name} />
       <input type="file" name="file" />
       <button type="submit">{pending ? 'submitting' : 'submit'}</button>

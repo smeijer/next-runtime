@@ -36,8 +36,8 @@ Without using `next-runtime`, `context.query` would look like:
 ```js
 context.query = {
   'person.name': 'smeijer',
-  'person.age': '34'
-}
+  'person.age': '34',
+};
 ```
 
 With query expansion that becomes:
@@ -48,7 +48,7 @@ context.query = {
     name: 'smeijer',
     age: '34',
   },
-}
+};
 ```
 
 This works with arrays as well (`person[n].name`).
@@ -75,7 +75,7 @@ export const getServerSideProps = handle({
       name: 'Stephan Meijer',
       country: 'The Netherlands',
     });
-  }
+  },
 });
 ```
 
@@ -100,12 +100,13 @@ When the user would submit that form with the values `Person` and `Some Place`, 
 req.body = {
   name: 'Person',
   country: 'Some Place',
-}
+};
 ```
 
-Note that [`query expansion`](#query-expansion) is applied to the request body as well. A submitted field name like `persons[0].name` translates to a `req.body` like `{ persons: [{ name: '' }]`. 
+Note that [`query expansion`](#query-expansion) is applied to the request body as well. A submitted field name like `persons[0].name` translates to a `req.body` like `{ persons: [{ name: '' }]`.
 
 ### Post JSON API
+
 Submitting a form is one way to receive post data, but every post handler also automatically serves as an api route. Users might just as well open curl and post data via the terminal:
 
 ```shell
@@ -136,12 +137,12 @@ import { handle, json } from 'next-runtime';
 
 export const getServerSideProps = handle({
   uploadDir: '/uploads',
-  
+
   async post({ req: { body } }) {
     return json({
       message: `Your file is stored at ${body.file.path}.`,
-    })
-  }
+    });
+  },
 });
 ```
 
@@ -174,11 +175,10 @@ export const getServerSideProps = handle({
   async post({ req: { body } }) {
     return json({
       message: `Your file is stored at ${body.file.path}.`,
-    })
-  }
+    });
+  },
 });
 ```
-
 
 ### Upload API
 
@@ -198,7 +198,7 @@ To protect your apis from being misused, it's possible to add restrictions using
 import { handle } from 'next-runtime';
 
 export const getServerSideProps = handle({
-  limits: { }
+  limits: {},
 });
 ```
 
