@@ -28,15 +28,15 @@ type Handlers<
   upload?: BodyParserOptions['onFile'];
 
   // The GET request handler, this is the default getServerSideProps
-  get: (
+  get: <T = P>(
     context: GetServerSidePropsContext<Q> & CookieJar & TypedHeaders,
-  ) => Promise<GetServerSidePropsResult<P>>;
+  ) => Promise<GetServerSidePropsResult<T>>;
 
   // The POST request handler, awesome to submit forms to!
-  post: (
+  post: <T = P>(
     context: GetServerSidePropsContext<Q> & { req: { body: F } } & CookieJar &
       TypedHeaders,
-  ) => Promise<GetServerSidePropsResult<P>>;
+  ) => Promise<GetServerSidePropsResult<T>>;
 };
 
 export function handle<
