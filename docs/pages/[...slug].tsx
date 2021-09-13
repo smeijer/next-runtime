@@ -136,7 +136,9 @@ export default function DocsPage({ source, frontMatter, next, prev, page }) {
   return (
     <>
       <SocialHead
-        title={`${frontMatter.pageTitle || frontMatter.title} — next-runtime`}
+        title={`next-runtime — ${
+          frontMatter.pageTitle || frontMatter.title
+        }`.toLowerCase()}
         description="All you need to handle POST requests, file uploads, and api requests, in Next.js getServerSideProps."
         url={absoluteUrl(page.slug)}
       />
