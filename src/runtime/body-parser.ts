@@ -42,7 +42,11 @@ export type BodyParserOptions = {
   uploadDir?: string;
   // Handle the file streams, and pipe them to S3, file system, or whatever.
   // When using this, files will no longer be written to the file system.
-  onFile?: (file: File, stream: NodeJS.ReadableStream) => void;
+  onFile?: (params: {
+    field: string;
+    file: File;
+    stream: NodeJS.ReadableStream;
+  }) => void;
 };
 
 const ACCEPT: ContentType[] = [
@@ -141,7 +145,7 @@ export async function bodyparser<TData extends Record<string, unknown>>(
         }
 
         if (options.onFile) {
-          options.onFile(value, file);
+          options.onFile({ field, file: value, stream: file });
         } else {
           // write to disk when the user doesn't provide an onFile handler
           await fs.promises.mkdir(uploadDir, { recursive: true });
