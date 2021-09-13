@@ -15,6 +15,11 @@ import {
 } from './types/next';
 import { ParsedUrlQuery } from './types/querystring';
 
+export type RuntimeContext<Q extends ParsedUrlQuery> =
+  GetServerSidePropsContext<Q> & CookieJar & TypedHeaders;
+
+export type RequestBody<F> = { req: { body: F } };
+
 type Handlers<
   P extends { [key: string]: any },
   Q extends ParsedUrlQuery = ParsedUrlQuery,
@@ -28,14 +33,11 @@ type Handlers<
   upload?: BodyParserOptions['onFile'];
 
   // The GET request handler, this is the default getServerSideProps
-  get: (
-    context: GetServerSidePropsContext<Q> & CookieJar & TypedHeaders,
-  ) => Promise<GetServerSidePropsResult<P>>;
+  get: (context: RuntimeContext<Q>) => Promise<GetServerSidePropsResult<P>>;
 
   // The POST request handler, awesome to submit forms to!
   post: (
-    context: GetServerSidePropsContext<Q> & { req: { body: F } } & CookieJar &
-      TypedHeaders,
+    context: RuntimeContext<Q> & RequestBody<F>,
   ) => Promise<GetServerSidePropsResult<P>>;
 };
 

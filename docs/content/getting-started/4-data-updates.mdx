@@ -1,0 +1,78 @@
+---
+title: Data updates
+---
+
+Now here's the thing that I'm most excited about. `POST` requests! It's likely that you've already been doing those with Next before, but usually it involves creating api-routes, posting with `fetch`, and managing client state with `swr` or `react-query`. No more!
+
+Let's get right to it.
+
+## handle » post
+
+```js
+import { handle, json } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  async post({ req: { body } }) {
+    await db.comments.insert({
+      message: body.message,
+    });
+
+    return json({
+      message: 'thanks for your comment!',
+    });
+  },
+});
+```
+
+I mean, how cool is that? By adding the `post` handler, we'll be able to submit forms (post data) to the same route as the one that's responsible for rendering the page. No context switching between the page component, `getServerSideProps`, and `api-routes`. And here as well it comes with a free api route. Post FormData to it, or JSON. They both just work.
+
+Possibly unnecessary, but here's a form that could be submitting data to this `getServerSideProps`.
+
+```jsx
+export default function MyPage({ name, message }) {
+  if (message) {
+    return <p>{message}</p>
+  }
+
+  return (
+    <form method="post">
+      <input name="name" defaultValue={name} />
+      <input name="message" />
+      <button type="submit">submit</button>
+    </form>
+  );
+}
+```
+
+That's right. Just a standard HTML form.
+
+## Upgrading to `<Form>`
+
+These standard `POST` requests are sweet! You'll have forms implemented in no-time. Don't make react control the state. Use `defaultValue` and no `onSubmit` handler. Let your server do its validation, and move on.
+
+But sometimes, we want more. Faster responses, or prevent the page from reloading. In such cases, you'll use `Form`.
+
+```jsx
+import { Form, usePendingFormSubmit } from 'next-runtime/form';
+
+export default function MyPage({ name, message }) {
+  const pending = usePendingFormSubmit();
+  
+  if (message) {
+    return <p>{message}</p>
+  }
+
+  return (
+    <Form method="post">
+      <input name="name" defaultValue={name} />
+      <input name="message" />
+      <button type="submit" disabled={pending}>
+        {pending ? 'submitting' : 'submit'}
+      </button>
+    </Form>
+  );
+}
+```
+
+Note that we now import `Form` from `next-runtime/form`, and use a hook to see if the form is currently being submitted. By using `Form` instead of `form`, the form is submitted using javascript (`fetch`), and the page won't refresh upon submission.
+

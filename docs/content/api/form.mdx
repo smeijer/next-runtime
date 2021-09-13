@@ -1,0 +1,77 @@
+---
+title: Form Component
+---
+
+The `Form` component can be used to upgrade your HTML `<form>`. Note that it posts the form data to the current page path, so it's meant to be use in conjunction with `handle` to process post data in `getServerSideProps`. 
+
+It does not do any client side state management. It's as much as an alternative to full fletched form libs, as it is not.
+
+The philosophy of `next-runtime` is to do more on the server, and less on the client. Simpler form handling is part of that.
+
+When using `Form`, we recommend to use `defaultValue` to set initial values, and to not use `value` or `onChange` handlers. Read "[simple form handling in react](https://dev.to/smeijer/simple-form-handling-in-react-o72)" to read more about that approach. 
+
+```jsx
+import { Form } from 'next-runtime/form';
+
+function MyPage() {
+  return (
+    <Form method="post">
+      <input name="name" defaultValue={name}/>
+      <input name="country" defaultValue={country}/>
+      <button type="submit">submit</button>
+    </Form>
+  );
+}
+```
+
+## Props
+
+`Form` takes the following props. All props are optional.
+
+- **method** _get | post_
+
+  The method to use for form submissions. `get` appends the form-data to the
+  URL in name/value pairs, while `post` sends the form-data as an HTTP post
+  transaction. Defaults to `post`
+
+- **validate** _(formData: FormData) => boolean_
+
+  A callback that's invoked before form submission. Return `false` when the
+  form data is invalid, and the form should not be submitted.
+
+- **onSuccess** _(response: Record<string, unknown>) => void_
+
+  A callback that's invoked upon successful submission. Can be used to update
+  the page or invoke a redirect. `response` the json payload returned from the
+  `post` handler.
+
+- **onError** _(error: string) => void_
+
+  A callback that's invoked when the form errors on the server side. Can be
+  used to show an error message. `error` is a string containing statusCode & statusText
+
+- **shallow** _boolean_
+
+  Submit the form without updating the current page. The form will still be reset, but the `get` handler is not rerun. Defaults to `false`.
+
+## usePendingFormSubmit
+
+A hook that provides access to the data that is currently being submitted. This allows you to create fancy loading screens.
+
+```jsx
+import { usePendingFormSubmit } from 'next-runtime/form';
+
+function MyPage() {
+  const pending = usePendingFormSubmit();
+  
+  if (pending) {
+    return (
+      <p>
+        {`Currently submitting ${pending.data.get('name')}`}
+      </p>
+    );
+  }
+  
+  // ...
+}
+```

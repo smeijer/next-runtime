@@ -1,0 +1,29 @@
+---
+title: headers
+---
+
+We have added a `getHeader` and a typed `setHeader` method to the request and response objects.
+
+## req.getHeader
+
+Next.js already has the dictionary lookup like `req.headers['referer']`, we've simply wrapped that method because `getCookie` & `getHeader` looks cleaner than `req.getCookie` and `req.headers['']`.
+
+```js
+export const getServerSideProps = handle({
+  async get({ req }) {
+    const referrer = req.getHeader('referer');
+  }
+});
+```
+
+## res.setHeader
+
+This one is actually Next.js own. Except, we've typed it so you can enjoy auto completions. No more typo's!
+
+```js
+export const getServerSideProps = handle({
+  async get({ res }) {
+    res.setHeader('cache-control', 'max-age=300')
+  }
+});
+```

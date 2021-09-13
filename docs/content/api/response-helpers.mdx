@@ -1,0 +1,48 @@
+---
+title: responses
+---
+
+next-runtime includes a few convenient helpers to increase the readability of your return statements. Usage is recommended, but entirely optional.
+
+As they simply transform your input object to a shape that next understands, you may also use them in the standard `getServerSideProps` functions if you want.
+
+## json
+
+Wraps the input object in `{ props: { ... } }`, which are then provided as props to the page component. 
+
+```js
+import { json } from 'next-runtime';
+
+export const getServerSideProps = () => {
+  // { props: { hello: 'world' } }
+  return json({ hello: 'world' });
+}
+```
+
+## redirect
+
+Redirect translates your destination path and options to the redirect object that Next understands.
+
+The options are optional, and `permanent` defaults to false.
+
+```js
+import { redirect } from 'next-runtime';
+
+export const getServerSideProps = () => {
+  // { redirect: { destination: '/other-page', permanent: false } }
+  return redirect('/other-page');
+}
+```
+
+## notFound
+
+Return this statement when you want to show the user that this page doesn't exist. Either because it really doesn't, or they shouldn't know it does because they lack permissions.
+
+```js
+import { notFound } from 'next-runtime';
+
+export const getServerSideProps = () => {
+  // { notFound: true }
+  return notFound();
+}
+```

@@ -1,0 +1,32 @@
+{
+  "name": "docs",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next-remote-watch ./content",
+    "build": "next build",
+    "export": "next build && next export",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@modulz/radix-icons": "^4.0.0",
+    "@twind/next": "^1.0.8",
+    "@twind/typography": "^0.0.2",
+    "clsx": "^1.1.1",
+    "common-tags": "^1.8.0",
+    "glob": "^7.1.7",
+    "gray-matter": "^4.0.3",
+    "next": "11.1.2",
+    "next-mdx-remote": "^3.0.4",
+    "next-remote-watch": "^1.0.0",
+    "prismjs": "^1.24.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "slugify": "^1.6.0",
+    "twind": "^0.16.16"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.20",
+    "typescript": "^4.4.3"
+  }
+}
