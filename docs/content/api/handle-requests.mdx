@@ -1,0 +1,239 @@
+---
+title: handle
+---
+
+Handle is the core method of this project. It wraps your `getServerSideProps` handler so that you can handle `post` requests in addition to `get` requests, and so that you'll have an automatically generated JSON api as well.
+
+## Handle `GET` requests
+
+Define the `get` handler to support `GET` requests, the standard `getServerSideProps` functionality that you're already familiar with. The return value from this handler is passed as props to the page component when the user visits the page.
+
+```ts
+import { handle, json } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  async get(context) {
+    return json({
+      name: 'Stephan Meijer',
+      country: 'The Netherlands',
+    });
+  },
+});
+```
+
+The `context` parameter is the object as provided by Next.js [`GetServerSidePropsContext`](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering) extended with [cookie](/api/cookies) and [header](/api/headers) handlers as well as query expansion.
+
+### Query expansion
+
+When using `next-runtime`, URL Search Parameters are expanded. Take the following url:
+
+```
+https://example.com?person.name=smeijer&person.age=34
+```
+
+Without using `next-runtime`, `context.query` would look like:
+
+```js
+context.query = {
+  'person.name': 'smeijer',
+  'person.age': '34'
+}
+```
+
+With query expansion that becomes:
+
+```js
+context.query = {
+  person: {
+    name: 'smeijer',
+    age: '34',
+  },
+}
+```
+
+This works with arrays as well (`person[n].name`).
+
+### Get JSON API
+
+Users don't always visit a web page to consume their information. Sometimes, they want to use a shell script, and request data in JSON format. Every `next-runtime` handler also serves as JSON endpoint. Even the `get` handler. Request the same page via curl, and you'll be served JSON instead.
+
+```shell
+curl https://example.com/page-path
+# » { name: 'Stephan Meijer', country: 'The Netherlands' }
+```
+
+## Handle `POST` Requests
+
+Define the `post` handler to support `POST` requests. Post requests can be used to submit forms to the current page, without the need to create an [`api-route`](https://nextjs.org/docs/api-routes/introduction).
+
+```ts
+import { handle, json } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  async post(context) {
+    return json({
+      name: 'Stephan Meijer',
+      country: 'The Netherlands',
+    });
+  }
+});
+```
+
+The `context` parameter is the object as provided by Next.js [`GetServerSidePropsContext`](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering) extended with [cookie](/api/cookies) and [header](/api/headers) handlers, and a populated `req.body`.
+
+### Post Request Body
+
+The request body contains an object, holding the contents that were submitted by the form or json post request.
+
+For example, take the following form:
+
+```html
+<form action="post">
+  <input name="name" />
+  <input country="country" />
+</form>
+```
+
+When the user would submit that form with the values `Person` and `Some Place`, `req.body` would equal:
+
+```js
+req.body = {
+  name: 'Person',
+  country: 'Some Place',
+}
+```
+
+Note that [`query expansion`](#query-expansion) is applied to the request body as well. A submitted field name like `persons[0].name` translates to a `req.body` like `{ persons: [{ name: '' }]`. 
+
+### Post JSON API
+Submitting a form is one way to receive post data, but every post handler also automatically serves as an api route. Users might just as well open curl and post data via the terminal:
+
+```shell
+curl \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "Stephan", "country": "The Netherlands" }' \
+  https://example.com/page-path
+```
+
+## Handle File Uploads
+
+To allow `POST` requests to include files, you'll need to set the `uploadDir` or define the `upload` handler. Note that this handler accompanies the `post` handler. You can have a `post` without an `upload` handler, but an `upload` without a `post` makes no sense. When neither of the options are provided, file uploads will be ignored.
+
+The examples below are based on the following form:
+
+```html
+<form action="post" enctype="multipart/form-data">
+  <input name="file" type="file" />
+</form>
+```
+
+### `uploadDir`
+
+The easiest way to support file uploads, is by setting the `uploadDir` option. When providing this option, files will be written to the local file system in the directory of your choice. Files will be stored with randomly generated filenames, and the full path will be available as `file.path` in the request body.
+
+```ts
+import { handle, json } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  uploadDir: '/uploads',
+  
+  async post({ req: { body } }) {
+    return json({
+      message: `Your file is stored at ${body.file.path}.`,
+    })
+  }
+});
+```
+
+### `upload` handler
+
+A more advanced method to handle file uploads, is by defining the `upload` handler. The upload handler receives an object as argument, holding three properties:
+
+- **field** _string_
+
+  The form field name under which the file was selected.
+
+- **file** _{ name: string, size: number, type: string }_
+
+  The file descriptor providing data about the uploaded file.
+
+- **stream** _ReadableStream_
+
+  The stream to be piped to stream writers.
+
+Use the readable stream to pipe the file upload directly to an object store like Amazon S3 or Digital Ocean spaces.
+
+```ts
+import { handle, json } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  async upload({ field, file, stream }) {
+    stream.pipe(fs.createWriteStream(`/uploads/${file.name}`));
+  },
+
+  async post({ req: { body } }) {
+    return json({
+      message: `Your file is stored at ${body.file.path}.`,
+    })
+  }
+});
+```
+
+
+### Upload API
+
+Uploads can be done via the api route as well. For that, it depends on the `post` handler. Give it a shot with the following CURL command:
+
+```bash
+curl --form file='@photo.png' https://example.com/page-path
+```
+
+## Limits
+
+We use a combination of [`body-parser`](https://www.npmjs.com/package/body-parser) and [`busboy`](https://www.npmjs.com/package/busboy) to parse the incoming data, together with our own glue for `query expansion`.
+
+To protect your apis from being misused, it's possible to add restrictions using the `limits` option. All limits are optional.
+
+```js
+import { handle } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  limits: { }
+});
+```
+
+The following options are available.
+
+- **fileCount** _number_
+
+  The maximum number of files a user can upload.
+
+- **fileSize** _number | string_
+
+  The maximum size per file in bytes. ¹⁾
+
+- **fieldSize** _number | string_
+
+  The maximum size per field in bytes. ¹⁾
+
+- **jsonSize** _number | string_
+
+  The maximum size of the full json payload. ¹⁾
+
+- **mimeType** _string_
+
+  A comma-separated list of one or more file types or unique file type specifiers to only accept files of certain types. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept) for more info. It's the same accept string as `<input type="file" accept="..." />` uses.
+
+## TypeScript
+
+`handle` accepts three type parameters. The first two are what you're familiar with from Next.js, `PageProps` and `UrlQuery`. PageProps is used to shape the `get` and `post` return value, while `UrlQuery` is used to shape `context.params`. The last one, `FormData` is one that we added and applies to `req.body`.
+
+Our `RuntimeContext` extends `GetServerSidepropsContext` with convenient [cookie](/api/cookies) and [header](/api/headers) helpers.
+
+```ts
+export const getServerSideProps = handle<PageProps, UrlQuery, FormData>({
+  async upload({ file: File, stream: ReadableStream }): void {},
+  async get({ params: UrlQuery }: RuntimeContext): PageProps {},
+  async post({ req: { body: FormData } }: RuntimeContext): PageProps {},
+});
+```

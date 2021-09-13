@@ -133,10 +133,8 @@ export type FormProps = {
    */
   onError?: (error: string) => void;
   /**
-   * Submit the form without updating the current page. If the `get` and `post`
-   * handlers of the page do not return the same data, having `shallow` set to
-   * `true`, merges the page props, while `false` will update the local caches
-   * and replace the page props. Defaults to `false`.
+   * Submit the form without updating the current page. The form will still be reset, but the
+   * `get` handler is not rerun. Defaults to `false`.
    */
   shallow?: boolean;
   /**

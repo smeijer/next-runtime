@@ -1,0 +1,52 @@
+---
+title: Introduction
+---
+
+Working with Next.js is a pleasure, but switching context between [`api-routes`](https://nextjs.org/docs/api-routes/introduction), [`static-site-generation`](https://nextjs.org/docs/basic-features/data-fetching#getstaticprops-static-generation) and [`incremental-static-regeneration`](https://nextjs.org/docs/basic-features/data-fetching#incremental-static-regeneration) is less than ideal. Next-runtime enables you to use [`getServerSideProps`](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering) for all of it.
+
+Get rid of the page props only limitation, and make it handle form submissions as well. Complete with a free JSON api, without any additional work.
+
+## Usage
+
+In case you're not the documentation type of person, here's a quick example to get you up and running. We'll go over it in the following pages, so no worries if you don't get it right away.
+
+To not confuse people that are unfamiliar with TypeScript, I'm not showing type annotations. That being said, the project is fully annotated.
+
+```jsx
+import fs from 'fs';
+import { handle, json } from 'next-runtime';
+import { Form, usePendingFormSubmit } from 'next-runtime/form';
+
+export const getServerSideProps = handle({
+  async upload({ file, stream }) {
+    stream.pipe(fs.createWriteStream(`/uploads/${file.name}`));
+  },
+
+  async get({ params, query }) {
+    return json({ name: 'Stephan Meijer' });
+  },
+
+  async post({ req: { body } }) {
+    return json({ message: 'Thanks for your submission!' });
+  },
+});
+
+export default function Home({ name, message }) {
+  const pending = usePendingFormSubmit();
+  
+  if (message) {
+    return <p>{message}</p>
+  }
+
+  return (
+    <form method="post" enctype="multipart/form-data">
+      <input name="name" defaultValue={name} />
+      <input type="file" name="file" />
+      <button type="submit">
+        {pending ? 'submitting' : 'submit'}
+      </button>
+    </form>
+  );
+}
+```
+

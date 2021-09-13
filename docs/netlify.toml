@@ -1,0 +1,13 @@
+[build]
+  command = "npm run export"
+  publish = "out"
+
+[[redirects]]
+  from = "/"
+  to = "/getting-started"
+  status = 301
+
+[[redirects]]
+  from = "/getting-started"
+  to = "/getting-started/1-introduction"
+  status = 301

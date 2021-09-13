@@ -23,9 +23,8 @@ export type File = {
 
 export type BodyParserOptions = {
   limits?: {
-    // The maximum number of files a user can upload. This field is required to
-    // enable uploads. Note that empty file fields, still count against the file
-    // count limit.
+    // The maximum number of files a user can upload. Note that empty file
+    // fields, still count against the file count limit.
     fileCount?: number;
     // The maximum size per file in bytes.
     fileSize?: number | string;
