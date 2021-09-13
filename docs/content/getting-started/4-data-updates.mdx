@@ -1,5 +1,5 @@
 ---
-title: Data updates
+title: Data Updates
 ---
 
 Now here's the thing that I'm most excited about. `POST` requests! It's likely that you've already been doing those with Next before, but usually it involves creating api-routes, posting with `fetch`, and managing client state with `swr` or `react-query`. No more!
@@ -31,7 +31,7 @@ Possibly unnecessary, but here's a form that could be submitting data to this `g
 ```jsx
 export default function MyPage({ name, message }) {
   if (message) {
-    return <p>{message}</p>
+    return <p>{message}</p>;
   }
 
   return (
@@ -57,9 +57,9 @@ import { Form, usePendingFormSubmit } from 'next-runtime/form';
 
 export default function MyPage({ name, message }) {
   const pending = usePendingFormSubmit();
-  
+
   if (message) {
-    return <p>{message}</p>
+    return <p>{message}</p>;
   }
 
   return (
@@ -75,4 +75,3 @@ export default function MyPage({ name, message }) {
 ```
 
 Note that we now import `Form` from `next-runtime/form`, and use a hook to see if the form is currently being submitted. By using `Form` instead of `form`, the form is submitted using javascript (`fetch`), and the page won't refresh upon submission.
-

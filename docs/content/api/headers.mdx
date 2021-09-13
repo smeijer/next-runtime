@@ -1,5 +1,5 @@
 ---
-title: headers
+title: Headers
 ---
 
 We have added a `getHeader` and a typed `setHeader` method to the request and response objects.
@@ -12,7 +12,7 @@ Next.js already has the dictionary lookup like `req.headers['referer']`, we've s
 export const getServerSideProps = handle({
   async get({ req }) {
     const referrer = req.getHeader('referer');
-  }
+  },
 });
 ```
 
@@ -23,7 +23,7 @@ This one is actually Next.js own. Except, we've typed it so you can enjoy auto c
 ```js
 export const getServerSideProps = handle({
   async get({ res }) {
-    res.setHeader('cache-control', 'max-age=300')
-  }
+    res.setHeader('cache-control', 'max-age=300');
+  },
 });
 ```

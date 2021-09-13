@@ -1,5 +1,5 @@
 ---
-title: cookies
+title: Cookies
 ---
 
 We extend the request and response objects with cookie handlers using [`cookies`](https://www.npmjs.com/package/cookies).
@@ -12,7 +12,7 @@ Extract a cookie with the given name from the Cookie header in the request.
 export const getServerSideProps = handle({
   async get({ req }) {
     const session = req.getCookie('session');
-  }
+  },
 });
 ```
 
@@ -20,13 +20,13 @@ See [pillarjs/cookies#cookies-get](https://github.com/pillarjs/cookies/tree/d211
 
 ## res.setCookie
 
-This sets the given cookie in the response. If the value is omitted, an response header with an expired data is used to delete the cookie. 
+This sets the given cookie in the response. If the value is omitted, an response header with an expired data is used to delete the cookie.
 
 ```js
 export const getServerSideProps = handle({
   async get({ res }) {
     res.setCookie('session', Date.now(), { expires: 300 });
-  }
+  },
 });
 ```
 
