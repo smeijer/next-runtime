@@ -58,7 +58,7 @@ This works with arrays as well (`person[n].name`).
 Users don't always visit a web page to consume their information. Sometimes, they want to use a shell script, and request data in JSON format. Every `next-runtime` handler also serves as JSON endpoint. Even the `get` handler. Request the same page via curl, and you'll be served JSON instead.
 
 ```shell
-curl https://example.com/page-path
+curl -H "Accept: application/json" https://example.com/page-path
 # » { name: 'Stephan Meijer', country: 'The Netherlands' }
 ```
 
