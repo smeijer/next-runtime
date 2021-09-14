@@ -22,7 +22,17 @@
         "infra",
         "maintenance"
       ]
+    },
+    {
+      "login": "schniz",
+      "name": "Gal Schlezinger",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2054772?v=4",
+      "profile": "https://gal.hagever.com",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
-  "contributorsPerLine": 7
+  "contributorsPerLine": 7,
+  "skipCi": true
 }
