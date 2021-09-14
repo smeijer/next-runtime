@@ -155,9 +155,72 @@ function SocialBar() {
     </div>
   );
 }
-export default function DocsPage({ source, frontMatter, next, prev, page }) {
+
+function Sidebar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  return (
+    <div className="w-0 md:w-64">
+      <div
+        className={cn(
+          'flex-none z-10 fixed top-0 left-0 bottom-0 md:w-64 flex bg-opacity-25 bg-black',
+          {
+            'w-full': menuOpen,
+            'w-0': !menuOpen,
+          },
+        )}
+        onClick={() => {
+          setMenuOpen(false);
+        }}
+      >
+        <aside
+          className={cn(
+            'flex-none flex flex-col w-64 bg-white border-r border-gray-200 h-screen transition md:translate-x-0',
+            {
+              '-translate-x-64': !menuOpen,
+              'translate-x-0': menuOpen,
+            },
+          )}
+        >
+          <h1 className="w-full mt-8 px-4 py-2 text-2xl font-light flex-none">
+            <Link href="/">next-runtime</Link>
+          </h1>
+
+          <div className="flex-none mb-4">
+            <SocialBar />
+          </div>
+
+          {/* be sure to add enough bottom padding for mobile 100vh trouble */}
+          <div className="flex-auto overflow-y-scroll pt-4 pb-20 relative">
+            {toc.map((entry, idx) =>
+              'caption' in entry ? (
+                <NavCaption
+                  key={`${idx}-${entry.caption}`}
+                  className={idx > 0 ? 'mt-8' : ''}
+                >
+                  {entry.caption}
+                </NavCaption>
+              ) : (
+                <NavLink key={`${idx}-${entry.slug}`} href={`/${entry.slug}`}>
+                  {entry.title}
+                </NavLink>
+              ),
+            )}
+          </div>
+        </aside>
+      </div>
+
+      <button
+        onClick={() => setMenuOpen((open) => !open)}
+        className="z-50 md:hidden bg-gray-800 hover:bg-gray-900 text-white fixed w-12 h-12 shadow-lg rounded-full bottom-6 right-6 flex items-center justify-center focus:outline-none"
+      >
+        <HamburgerMenuIcon />
+      </button>
+    </div>
+  );
+}
+
+export default function DocsPage({ source, frontMatter, next, prev, page }) {
   return (
     <>
       <SocialHead
@@ -168,54 +231,8 @@ export default function DocsPage({ source, frontMatter, next, prev, page }) {
         url={absoluteUrl(page.slug)}
       />
       <div className="flex flex-col min-h-screen">
-        <div className="flex flex-auto w-full max-w-6xl mx-auto px-4">
-          <div
-            className={cn(
-              'flex-none z-10 fixed top-0 left-0 bottom-0 md:w-64 md:relative flex bg-opacity-25 bg-black',
-              {
-                'w-full': menuOpen,
-                'w-0': !menuOpen,
-              },
-            )}
-            onClick={() => {
-              setMenuOpen(false);
-            }}
-          >
-            <aside
-              className={cn(
-                'flex-none w-64 bg-white border-r border-gray-200 py-8 overflow-y-auto transition md:translate-x-0',
-                {
-                  '-translate-x-64': !menuOpen,
-                  'translate-x-0': menuOpen,
-                },
-              )}
-            >
-              <h1 className="w-full px-4 py-2 text-2xl font-light">
-                <Link href="/">next-runtime</Link>
-              </h1>
-
-              <SocialBar />
-
-              {toc.map((entry, idx) =>
-                'caption' in entry ? (
-                  <NavCaption key={`${idx}-${entry.caption}`} className="mt-8">
-                    {entry.caption}
-                  </NavCaption>
-                ) : (
-                  <NavLink key={`${idx}-${entry.slug}`} href={`/${entry.slug}`}>
-                    {entry.title}
-                  </NavLink>
-                ),
-              )}
-            </aside>
-          </div>
-
-          <button
-            onClick={() => setMenuOpen((open) => !open)}
-            className="z-50 md:hidden bg-gray-800 hover:bg-gray-900 text-white fixed w-12 h-12 shadow-lg rounded-full bottom-6 right-6 flex items-center justify-center focus:outline-none"
-          >
-            <HamburgerMenuIcon />
-          </button>
+        <div className="flex flex-auto w-full max-w-6xl mx-auto">
+          <Sidebar />
 
           <div className="overflow-x-hidden px-8 pb-16 mx-auto w-full max-w-prose">
             <h1 className="text-5xl tracking-tight font-light mt-8 mb-6 relative text-gray-900">

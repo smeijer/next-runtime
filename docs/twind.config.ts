@@ -9,6 +9,18 @@ const config: Configuration = {
       className: 'prose',
     }),
     mdx: {
+      ':global': {
+        '::-webkit-scrollbar': {
+          width: '5px',
+          height: '5px',
+        },
+
+        '::-webkit-scrollbar-thumb': {
+          backgroundColor: '#adb5bd',
+          borderRadius: '4px',
+        },
+      },
+
       '& > pre': {
         padding: 0,
       },
@@ -19,9 +31,6 @@ const config: Configuration = {
       '& ul > li > p:first-child > strong:first-child + em:nth-child(2)': {
         marginLeft: '.5em',
       },
-      // 'li > p': {
-      //   display: 'inline-block',
-      // },
     },
   },
   theme: {
