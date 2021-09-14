@@ -19,6 +19,12 @@ import { renderToString } from 'react-dom/server';
 import _slugify from 'slugify';
 
 import Code from '../components/code';
+import {
+  GithubCircleIcon,
+  GithubIcon,
+  NpmIcon,
+  TwitterIcon,
+} from '../components/icons';
 import SocialHead from '../components/social-head';
 import toc, { TocLink } from '../content/toc';
 import { absoluteUrl } from '../lib/absolute-url';
@@ -130,6 +136,25 @@ function NavCaption({ children, className = '' }) {
   );
 }
 
+function SocialBar() {
+  return (
+    <div className="flex w-full px-4 space-x-4 py-2">
+      <a
+        title="GitHub"
+        target="_blank"
+        href="https://github.com/smeijer/next-runtime"
+      >
+        <GithubIcon className="" />
+      </a>
+      <a title="npm" target="_blank" href="https://npmjs.com/next-runtime">
+        <NpmIcon className="" />
+      </a>
+      <a title="Twitter" target="_blank" href="https://twitter.com/meijer_s">
+        <TwitterIcon className="" />
+      </a>
+    </div>
+  );
+}
 export default function DocsPage({ source, frontMatter, next, prev, page }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -168,6 +193,8 @@ export default function DocsPage({ source, frontMatter, next, prev, page }) {
               <h1 className="w-full px-4 py-2 text-2xl font-light">
                 <Link href="/">next-runtime</Link>
               </h1>
+
+              <SocialBar />
 
               {toc.map((entry, idx) =>
                 'caption' in entry ? (
@@ -231,7 +258,7 @@ export default function DocsPage({ source, frontMatter, next, prev, page }) {
                 className="flex items-center px-4 py-2 rounded-lg hover:opacity-60"
                 href={`https://github.com/smeijer/next-runtime/edit/main/docs/content/${page.slug}.mdx`}
               >
-                Edit this page on GitHub
+                <GithubCircleIcon className="w-5 h-5 mr-2" /> Edit on GitHub
               </a>
             </div>
           </div>
