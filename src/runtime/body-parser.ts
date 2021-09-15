@@ -217,9 +217,9 @@ export async function bodyparser<TData extends Record<string, unknown>>(
       req.body = data;
 
       // push it to a next frame, so that onFile promises complete first
-      setImmediate(() => {
+      setTimeout(() => {
         resolve(data as TData);
-      });
+      }, 0);
     });
 
     req.pipe(busboy);

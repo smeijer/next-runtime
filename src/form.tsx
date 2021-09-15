@@ -173,11 +173,14 @@ export function Form({
 
   useEffect(() => {
     if (!shallow && state.state === 'success') {
-      void router.replace(router.asPath, undefined, { scroll: false });
+      // router is undefined in tests
+      void router?.replace(router.asPath, undefined, { scroll: false });
     }
   }, [state.state, shallow]);
 
   useEffect(() => {
+    let mounted = true;
+
     async function transition() {
       switch (state.state) {
         case 'pending': {
@@ -188,8 +191,10 @@ export function Form({
 
           try {
             const result = await fetchData(state.data);
+            if (!mounted) return;
             setState({ ...state, state: 'success', data: result });
           } catch (e) {
+            if (!mounted) return;
             setState({ ...state, state: 'error', error: e.message });
           } finally {
             submission.done();
@@ -222,6 +227,10 @@ export function Form({
     }
 
     void transition();
+
+    return () => {
+      mounted = false;
+    };
   }, [state]);
 
   const handleSubmit = async (event) => {

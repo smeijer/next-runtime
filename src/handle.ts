@@ -20,6 +20,8 @@ export type RuntimeContext<Q extends ParsedUrlQuery> =
 
 export type RequestBody<F> = { req: { body: F } };
 
+type MaybePromise<T> = Promise<T> | T;
+
 type Handlers<
   P extends { [key: string]: any },
   Q extends ParsedUrlQuery = ParsedUrlQuery,
@@ -33,12 +35,14 @@ type Handlers<
   upload?: BodyParserOptions['onFile'];
 
   // The GET request handler, this is the default getServerSideProps
-  get?: (context: RuntimeContext<Q>) => Promise<GetServerSidePropsResult<P>>;
+  get?: (
+    context: RuntimeContext<Q>,
+  ) => MaybePromise<GetServerSidePropsResult<P>>;
 
   // The POST request handler, awesome to submit forms to!
   post?: (
     context: RuntimeContext<Q> & RequestBody<F>,
-  ) => Promise<GetServerSidePropsResult<P>>;
+  ) => MaybePromise<GetServerSidePropsResult<P>>;
 };
 
 export function handle<
