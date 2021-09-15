@@ -21,7 +21,9 @@ function setHeaders(headers: IncomingHttpHeaders) {
 /**
  * Send the user a 404
  */
-export function notFound(options: { headers?: IncomingHttpHeaders } = {}) {
+export function notFound(options: { headers?: IncomingHttpHeaders } = {}): {
+  notFound: true;
+} {
   setHeaders(options.headers);
 
   return {
