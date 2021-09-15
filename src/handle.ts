@@ -33,10 +33,10 @@ type Handlers<
   upload?: BodyParserOptions['onFile'];
 
   // The GET request handler, this is the default getServerSideProps
-  get: (context: RuntimeContext<Q>) => Promise<GetServerSidePropsResult<P>>;
+  get?: (context: RuntimeContext<Q>) => Promise<GetServerSidePropsResult<P>>;
 
   // The POST request handler, awesome to submit forms to!
-  post: (
+  post?: (
     context: RuntimeContext<Q> & RequestBody<F>,
   ) => Promise<GetServerSidePropsResult<P>>;
 };
