@@ -51,7 +51,11 @@ async function request(
 }
 
 export async function next(getServerSideProps: GetServerSideProps) {
+  let lastRequest = Date.now();
+
   const server = http.createServer((req, res) => {
+    lastRequest = Date.now();
+
     getServerSideProps({
       req,
       res,
@@ -72,18 +76,17 @@ export async function next(getServerSideProps: GetServerSideProps) {
       });
   });
 
+  const interval = setInterval(() => {
+    if (Date.now() - lastRequest < 50) return;
+    clearInterval(interval);
+    server.close();
+  }, 3);
+
   const url = await listen(server);
-  const timeout = null;
 
-  return async (path = '/', options?: RequestOptions) => {
-    clearTimeout(timeout);
-    const result = await request(`${url}${path}`, options);
+  const fetch = async (path = '/', options?: RequestOptions) =>
+    request(`${url}${path}`, options);
 
-    // give it 25 ms for another request to come in, close after that
-    setTimeout(() => {
-      server.close();
-    }, 25);
-
-    return result;
-  };
+  fetch.url = url;
+  return fetch;
 }
