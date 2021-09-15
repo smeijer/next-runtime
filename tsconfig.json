@@ -19,6 +19,6 @@
     "declaration": true
   },
   // TODO: utils is not published
-  "include": ["next-env.d.ts", "./src/**/*"],
+  "include": ["next-env.d.ts", "jest.d.ts", "./src/**/*"],
   "exclude": ["node_modules"]
 }
