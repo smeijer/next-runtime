@@ -156,7 +156,7 @@ export async function bodyparser<TData extends Record<string, unknown>>(
 
         if (limits.mimeType && !accepts({ name, type }, limits.mimeType)) {
           errors.push({
-            error: 'FILE_TYPE_REJECTED',
+            name: 'FILE_TYPE_REJECTED',
             message: `file "${value.name}" is not of type "${limits.mimeType}"`,
           });
           return file.resume();
