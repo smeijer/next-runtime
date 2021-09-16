@@ -3,6 +3,7 @@ const isUnit = process.env.type !== 'e2e';
 const sharedConfig = {
   setupFilesAfterEnv: ['jest-partial'],
   modulePathIgnorePatterns: ['<rootDir>/docs', '<rootDir>/lib'],
+  verbose: true,
 };
 
 if (isUnit) {
@@ -12,7 +13,7 @@ if (isUnit) {
     testEnvironment: 'node',
     globals: {
       'ts-jest': {
-        tsConfig: './tsconfig.build.json',
+        tsconfig: './tsconfig.build.json',
       },
     },
   };

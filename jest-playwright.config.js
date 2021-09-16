@@ -6,7 +6,7 @@ module.exports = {
     command: `npx next dev -p ${PORT}`,
     port: PORT,
     launchTimeout: 30_000,
-    debug: true,
+    debug: false,
     options: {
       env: {
         E2E_TESTS: 'true',
@@ -17,5 +17,5 @@ module.exports = {
     headless: true,
     // slowMo: 25,
   },
-  collectCoverage: true,
+  collectCoverage: false, // doesn't really do what we need
 };
