@@ -1,5 +1,15 @@
 import { useRouter } from 'next/router';
-import { ReactNode, useEffect, useReducer, useRef, useState } from 'react';
+import {
+  FormHTMLAttributes,
+  forwardRef,
+  ReactNode,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
+
+import { useRefs } from './utils/useRefs';
 
 type Store = {
   pending: number;
@@ -141,21 +151,25 @@ export type FormProps = {
    * The fields & content of the form. Make something pretty :-)
    */
   children: ReactNode;
-};
+} & FormHTMLAttributes<HTMLFormElement>;
 
 /**
  * Replace your `form` with `Form` to submit it clientside using `fetch`, and get
  * access to the serialized form data in `usePendingSubmit()` to build a great
  * looking loading status.
  */
-export function Form({
-  children,
-  method = 'post',
-  validate,
-  onSuccess,
-  onError,
-  shallow = false,
-}: FormProps) {
+export const Form = forwardRef(function Form(
+  {
+    method = 'post',
+    validate,
+    onSuccess,
+    onError,
+    onSubmit,
+    shallow = false,
+    ...props
+  }: FormProps,
+  forwardRef,
+) {
   const [state, setState] = useState<
     | { state: 'idle'; error?: string; data?: unknown }
     | { state: 'pending'; data: FetchDataOptions }
@@ -164,8 +178,7 @@ export function Form({
   >({ state: 'idle' });
 
   const router = useRouter();
-
-  const ref = useRef<HTMLFormElement>(null);
+  const ref = useRefs<HTMLFormElement>(forwardRef);
 
   const handlers = useRef({ onSuccess, onError });
   handlers.current.onError = onError;
@@ -208,18 +221,12 @@ export function Form({
             setState({ ...state, state: 'idle' });
           }, 2000);
 
-          if (typeof handlers.current.onError === 'function') {
-            handlers.current.onError(state.error);
-          }
-
+          handlers.current.onError?.(state.error);
           break;
         }
 
         case 'success': {
-          if (typeof handlers.current.onSuccess === 'function') {
-            handlers.current.onSuccess(state.data);
-          }
-
+          handlers.current.onSuccess?.(state.data);
           ref.current.reset();
           break;
         }
@@ -234,6 +241,8 @@ export function Form({
   }, [state]);
 
   const handleSubmit = async (event) => {
+    onSubmit?.(event);
+    if (event.defaultPrevented) return;
     event.preventDefault();
     const form = event.currentTarget;
 
@@ -255,9 +264,5 @@ export function Form({
     });
   };
 
-  return (
-    <form ref={ref} method={method} onSubmit={handleSubmit}>
-      {children}
-    </form>
-  );
-}
+  return <form ref={ref} method={method} onSubmit={handleSubmit} {...props} />;
+});

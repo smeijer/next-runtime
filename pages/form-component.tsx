@@ -34,9 +34,6 @@ export default function FormComponent(props: PageProps) {
 
   return (
     <>
-      {pending ? (
-        <p id="status">{`submitting ${pending.data.get('name')}`}</p>
-      ) : null}
       <p id="message">
         {props.message} <span id="time">{props.time}</span>
       </p>
@@ -45,6 +42,9 @@ export default function FormComponent(props: PageProps) {
         <input name="file" type="file" />
         <input type="submit" />
       </Form>
+      {pending ? (
+        <p id="status">{`submitting ${pending.data.get('name')}`}</p>
+      ) : null}
     </>
   );
 }
