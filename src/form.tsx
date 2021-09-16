@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import {
+  FormEventHandler,
   FormHTMLAttributes,
   forwardRef,
   ReactNode,
@@ -122,12 +123,13 @@ export type FormProps = {
    */
   method?: 'get' | 'post';
   /**
-   * A callback that's invoked before form submission. Return `false` when the
-   * form data isn't valid, and the form should not be submitted.
+   * A callback that's invoked on form submission. Call `event.preventDefault()`
+   * if you don't want Form to handle your submission. For example to abort in
+   * case of validation errors.
    *
    * @param formData the data that was entered in the form
    */
-  validate?: (formData: FormData) => boolean;
+  onSubmit?: FormEventHandler<HTMLFormElement>;
   /**
    * A callback that's invoked upon successful submission. Can be used to update
    * the page or invoke a redirect.
@@ -161,7 +163,6 @@ export type FormProps = {
 export const Form = forwardRef(function Form(
   {
     method = 'post',
-    validate,
     onSuccess,
     onError,
     onSubmit,
@@ -246,17 +247,11 @@ export const Form = forwardRef(function Form(
     event.preventDefault();
     const form = event.currentTarget;
 
-    if (state.state === 'pending') {
-      return;
-    }
+    if (state.state === 'pending') return;
 
     const data = new FormData(form);
     const url = form.action;
     const method = form.method;
-
-    if (typeof validate === 'function' && validate(data) === false) {
-      return;
-    }
 
     setState({
       state: 'pending',
