@@ -1,5 +1,6 @@
 import accepts from 'accepts';
 
+import { httpMethodsWithBody, HttpMethodWithBody } from './http-methods';
 import { USE_ASYNC_LOCAL_STORAGE } from './lib/flags';
 import { log } from './lib/log';
 import { notFound } from './responses';
@@ -38,9 +39,9 @@ type Handlers<
   get?: (
     context: RuntimeContext<Q>,
   ) => MaybePromise<GetServerSidePropsResult<P>>;
-
-  // The POST request handler, awesome to submit forms to!
-  post?: (
+} & {
+  // Body request handlers, awesome to submit forms to!
+  [Method in HttpMethodWithBody]?: (
     context: RuntimeContext<Q> & RequestBody<F>,
   ) => MaybePromise<GetServerSidePropsResult<P>>;
 };
@@ -62,7 +63,7 @@ export function handle<
     // also handle complex objects in query params
     context.query = expandQueryParams(context.query);
 
-    if (method === 'post') {
+    if (httpMethodsWithBody.includes(method as HttpMethodWithBody)) {
       await bodyparser<F>(req, {
         limits: handlers.limits,
         onFile: handlers.upload,
