@@ -2,13 +2,13 @@
 title: Form Component
 ---
 
-The `Form` component can be used to upgrade your HTML `<form>`. Note that it posts the form data to the current page path, so it's meant to be use in conjunction with `handle` to process post data in `getServerSideProps`. 
+The `Form` component can be used to upgrade your HTML `<form>`. Note that it posts the form data to the current page path, so it's meant to be use in conjunction with `handle` to process post data in `getServerSideProps`.
 
 It does not do any client side state management. It's as much as an alternative to full fletched form libs, as it is not.
 
 The philosophy of `next-runtime` is to do more on the server, and less on the client. Simpler form handling is part of that.
 
-When using `Form`, we recommend to use `defaultValue` to set initial values, and to not use `value` or `onChange` handlers. Read "[simple form handling in react](https://dev.to/smeijer/simple-form-handling-in-react-o72)" to read more about that approach. 
+When using `Form`, we recommend to use `defaultValue` to set initial values, and to not use `value` or `onChange` handlers. Read "[simple form handling in react](https://dev.to/smeijer/simple-form-handling-in-react-o72)" to read more about that approach.
 
 ```jsx
 import { Form } from 'next-runtime/form';
@@ -16,8 +16,8 @@ import { Form } from 'next-runtime/form';
 function MyPage() {
   return (
     <Form method="post">
-      <input name="name" defaultValue={name}/>
-      <input name="country" defaultValue={country}/>
+      <input name="name" defaultValue={name} />
+      <input name="country" defaultValue={country} />
       <button type="submit">submit</button>
     </Form>
   );
@@ -34,10 +34,10 @@ function MyPage() {
   URL in name/value pairs, while `post` sends the form-data as an HTTP post
   transaction. Defaults to `post`
 
-- **validate** _(formData: FormData) => boolean_
+- **onSubmit** _FormEventHandler<HTMLFormElement>_
 
-  A callback that's invoked before form submission. Return `false` when the
-  form data is invalid, and the form should not be submitted.
+  A callback that's invoked before form submission. It receives the raw `event` as argument from React. This function can
+  be used for validation. Call `event.preventDefault` to block our handler from being fired.
 
 - **onSuccess** _(response: Record<string, unknown>) => void_
 
@@ -63,15 +63,11 @@ import { usePendingFormSubmit } from 'next-runtime/form';
 
 function MyPage() {
   const pending = usePendingFormSubmit();
-  
+
   if (pending) {
-    return (
-      <p>
-        {`Currently submitting ${pending.data.get('name')}`}
-      </p>
-    );
+    return <p>{`Currently submitting ${pending.data.get('name')}`}</p>;
   }
-  
+
   // ...
 }
 ```
