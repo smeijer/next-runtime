@@ -1,7 +1,9 @@
 /node_modules
 /coverage
 /lib
+.next
 .coverage
+.nyc_output
 
 # misc
 .DS_Store

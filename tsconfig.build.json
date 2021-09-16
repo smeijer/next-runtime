@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "rootDir": ".",
+    "rootDir": "./src",
     "outDir": "./lib",
     "downlevelIteration": true,
     "target": "ES2015",
@@ -14,12 +14,10 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "sourceMap": true,
-    "declaration": true,
-    "noEmit": true
+    "declaration": true
   },
-  // TODO: utils is not published
-  "include": ["next-env.d.ts", "jest.d.ts", "./src/**/*", "./pages/**/*"],
+  "include": ["next-env.d.ts", "jest.d.ts", "./src/**/*"],
   "exclude": ["node_modules"]
 }
