@@ -16,3 +16,7 @@ yarn-error.log*
 
 # local env files
 .env.*
+
+# other package managers
+/yarn.lock
+/pnpm-lock.yaml
