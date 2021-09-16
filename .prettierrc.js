@@ -11,5 +11,11 @@ module.exports = {
         printWidth: 120,
       },
     },
+    {
+      files: '*.mdx',
+      options: {
+        proseWrap: 'always',
+      },
+    },
   ],
 };

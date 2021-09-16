@@ -2,11 +2,14 @@
 title: Headers
 ---
 
-We have added a `getHeader` and a typed `setHeader` method to the request and response objects.
+We have added a `getHeader` and a typed `setHeader` method to the request and
+response objects.
 
 ## req.getHeader
 
-Next.js already has the dictionary lookup like `req.headers['referer']`, we've simply wrapped that method because `getCookie` & `getHeader` looks cleaner than `req.getCookie` and `req.headers['']`.
+Next.js already has the dictionary lookup like `req.headers['referer']`, we've
+simply wrapped that method because `getCookie` & `getHeader` looks cleaner than
+`req.getCookie` and `req.headers['']`.
 
 ```js
 export const getServerSideProps = handle({
@@ -18,7 +21,8 @@ export const getServerSideProps = handle({
 
 ## res.setHeader
 
-This one is actually Next.js own. Except, we've typed it so you can enjoy auto completions. No more typo's!
+This one is actually Next.js own. Except, we've typed it so you can enjoy auto
+completions. No more typo's!
 
 ```js
 export const getServerSideProps = handle({

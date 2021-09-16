@@ -2,15 +2,26 @@
 title: Introduction
 ---
 
-Working with Next.js is a pleasure, but switching context between [`api-routes`](https://nextjs.org/docs/api-routes/introduction), [`static-site-generation`](https://nextjs.org/docs/basic-features/data-fetching#getstaticprops-static-generation) and [`incremental-static-regeneration`](https://nextjs.org/docs/basic-features/data-fetching#incremental-static-regeneration) is less than ideal. Next-runtime enables you to use [`getServerSideProps`](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering) for all of it.
+Working with Next.js is a pleasure, but switching context between
+[`api-routes`](https://nextjs.org/docs/api-routes/introduction),
+[`static-site-generation`](https://nextjs.org/docs/basic-features/data-fetching#getstaticprops-static-generation)
+and
+[`incremental-static-regeneration`](https://nextjs.org/docs/basic-features/data-fetching#incremental-static-regeneration)
+is less than ideal. Next-runtime enables you to use
+[`getServerSideProps`](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering)
+for all of it.
 
-Get rid of the page props only limitation, and make it handle form submissions as well. Complete with a free JSON api, without any additional work.
+Get rid of the page props only limitation, and make it handle form submissions
+as well. Complete with a free JSON api, without any additional work.
 
 ## Usage
 
-In case you're not the documentation type of person, here's a quick example to get you up and running. We'll go over it in the following pages, so no worries if you don't get it right away.
+In case you're not the documentation type of person, here's a quick example to
+get you up and running. We'll go over it in the following pages, so no worries
+if you don't get it right away.
 
-To not confuse people that are unfamiliar with TypeScript, I'm not showing type annotations. That being said, the project is fully annotated.
+To not confuse people that are unfamiliar with TypeScript, I'm not showing type
+annotations. That being said, the project is fully annotated.
 
 ```jsx
 import fs from 'fs';
@@ -50,4 +61,13 @@ export default function Home({ name, message }) {
 
 ## Credits
 
-I've always been a big fan of simplicity, and reducing boilerplate. The YouTube video [CDN Caching, Static Site Generation, and Server Side Rendering](https://www.youtube.com/watch?v=bfLFHp7Sbkg) by [Ryan Florence](https://twitter.com/ryanflorence?lang=en) just clicked, and has been an huge inspiration for this project. You can clearly see my attempt to bring a bit of the simplicity that Remix offers to Next.js. Some functions have their signature all over it, because my goal is to have a Remix-like API/philosophy in Next for those that are unable to switch. Credit where credit's due. <span class="text-red-600">❤</span>️ [Remix](https://remix.run), go check 'm out!
+I've always been a big fan of simplicity, and reducing boilerplate. The YouTube
+video
+[CDN Caching, Static Site Generation, and Server Side Rendering](https://www.youtube.com/watch?v=bfLFHp7Sbkg)
+by [Ryan Florence](https://twitter.com/ryanflorence?lang=en) just clicked, and
+has been an huge inspiration for this project. You can clearly see my attempt to
+bring a bit of the simplicity that Remix offers to Next.js. Some functions have
+their signature all over it, because my goal is to have a Remix-like
+API/philosophy in Next for those that are unable to switch. Credit where
+credit's due. <span class="text-red-600">❤</span>️ [Remix](https://remix.run),
+go check 'm out!

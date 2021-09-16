@@ -2,13 +2,20 @@
 title: Form Component
 ---
 
-The `Form` component can be used to upgrade your HTML `<form>`. Note that it posts the form data to the current page path, so it's meant to be use in conjunction with `handle` to process post data in `getServerSideProps`.
+The `Form` component can be used to upgrade your HTML `<form>`. Note that it
+posts the form data to the current page path, so it's meant to be use in
+conjunction with `handle` to process post data in `getServerSideProps`.
 
-It does not do any client side state management. It's as much as an alternative to full fletched form libs, as it is not.
+It does not do any client side state management. It's as much as an alternative
+to full fletched form libs, as it is not.
 
-The philosophy of `next-runtime` is to do more on the server, and less on the client. Simpler form handling is part of that.
+The philosophy of `next-runtime` is to do more on the server, and less on the
+client. Simpler form handling is part of that.
 
-When using `Form`, we recommend to use `defaultValue` to set initial values, and to not use `value` or `onChange` handlers. Read "[simple form handling in react](https://dev.to/smeijer/simple-form-handling-in-react-o72)" to read more about that approach.
+When using `Form`, we recommend to use `defaultValue` to set initial values, and
+to not use `value` or `onChange` handlers. Read
+"[simple form handling in react](https://dev.to/smeijer/simple-form-handling-in-react-o72)"
+to read more about that approach.
 
 ```jsx
 import { Form } from 'next-runtime/form';
@@ -30,14 +37,15 @@ function MyPage() {
 
 - **method** _get | post_
 
-  The method to use for form submissions. `get` appends the form-data to the
-  URL in name/value pairs, while `post` sends the form-data as an HTTP post
+  The method to use for form submissions. `get` appends the form-data to the URL
+  in name/value pairs, while `post` sends the form-data as an HTTP post
   transaction. Defaults to `post`
 
-- **onSubmit** _FormEventHandler<HTMLFormElement>_
+- **onSubmit** _(event: FormEvent) => void_
 
-  A callback that's invoked before form submission. It receives the raw `event` as argument from React. This function can
-  be used for validation. Call `event.preventDefault` to block our handler from being fired.
+  A callback that's invoked before form submission. It receives the raw `event`
+  as argument from React. This function can be used for validation. Call
+  `event.preventDefault` to block our handler from being fired.
 
 - **onSuccess** _(response: Record<string, unknown>) => void_
 
@@ -47,16 +55,19 @@ function MyPage() {
 
 - **onError** _(error: string) => void_
 
-  A callback that's invoked when the form errors on the server side. Can be
-  used to show an error message. `error` is a string containing statusCode & statusText
+  A callback that's invoked when the form errors on the server side. Can be used
+  to show an error message. `error` is a string containing statusCode &
+  statusText
 
 - **shallow** _boolean_
 
-  Submit the form without updating the current page. The form will still be reset, but the `get` handler is not rerun. Defaults to `false`.
+  Submit the form without updating the current page. The form will still be
+  reset, but the `get` handler is not rerun. Defaults to `false`.
 
 ## usePendingFormSubmit
 
-A hook that provides access to the data that is currently being submitted. This allows you to create fancy loading screens.
+A hook that provides access to the data that is currently being submitted. This
+allows you to create fancy loading screens.
 
 ```jsx
 import { usePendingFormSubmit } from 'next-runtime/form';

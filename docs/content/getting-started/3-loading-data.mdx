@@ -2,10 +2,12 @@
 title: Loading Data
 ---
 
-Dynamically loading data from the server is why `getServerSideProps` was added to Next.js. We
-build upon that to add a more rich feature set. But let start with the basics first.
+Dynamically loading data from the server is why `getServerSideProps` was added
+to Next.js. We build upon that to add a more rich feature set. But let start
+with the basics first.
 
-The standard method that you might already be familiar with, looks something like thiss:
+The standard method that you might already be familiar with, looks something
+like thiss:
 
 ```js
 export const getServerSideProps = async () => {
@@ -15,8 +17,9 @@ export const getServerSideProps = async () => {
 
 ## handle » get
 
-To make `next-runtime` handle this page route, simply wrap it with our `handle` util. By adding it on the page level,
-we only process requests to those specific paths. All other pages are unaffected by your change.
+To make `next-runtime` handle this page route, simply wrap it with our `handle`
+util. By adding it on the page level, we only process requests to those specific
+paths. All other pages are unaffected by your change.
 
 ```js
 import { handle } from 'next-runtime';
@@ -28,9 +31,11 @@ export const getServerSideProps = handle({
 });
 ```
 
-That's it, your page works as before, except it also serves as `json` api for `GET` requests. We'll come back to that.
+That's it, your page works as before, except it also serves as `json` api for
+`GET` requests. We'll come back to that.
 
-Just for convenience, we ship a `json` util that removes the need to wrap props in `props`. I mean, do we ever _not_ return props?
+Just for convenience, we ship a `json` util that removes the need to wrap props
+in `props`. I mean, do we ever _not_ return props?
 
 ```js
 import { handle, json } from 'next-runtime';
@@ -42,7 +47,10 @@ export const getServerSideProps = handle({
 });
 ```
 
-How's that? As already briefly mentioned, by defining the handler inside our `handle` method, we not only serve the page component it's initial props, but this route now also supports json request. Give it a shot and request this same page with the browser, and curl or postman. Amazing, right?
+How's that? As already briefly mentioned, by defining the handler inside our
+`handle` method, we not only serve the page component it's initial props, but
+this route now also supports json request. Give it a shot and request this same
+page with the browser, and curl or postman. Amazing, right?
 
 ```bash
 curl -H "Accept: application/json" http://example.com/page-path

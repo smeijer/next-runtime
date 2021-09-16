@@ -2,7 +2,8 @@
 title: Cookies
 ---
 
-We extend the request and response objects with cookie handlers using [`cookies`](https://www.npmjs.com/package/cookies).
+We extend the request and response objects with cookie handlers using
+[`cookies`](https://www.npmjs.com/package/cookies).
 
 ## req.getCookie
 
@@ -16,11 +17,14 @@ export const getServerSideProps = handle({
 });
 ```
 
-See [pillarjs/cookies#cookies-get](https://github.com/pillarjs/cookies/tree/d2111627e8ff2e29f90e75d1f1cc4164c5a07a3f#cookiesget-name--options--) for more options.
+See
+[pillarjs/cookies#cookies-get](https://github.com/pillarjs/cookies/tree/d2111627e8ff2e29f90e75d1f1cc4164c5a07a3f#cookiesget-name--options--)
+for more options.
 
 ## res.setCookie
 
-This sets the given cookie in the response. If the value is omitted, an response header with an expired data is used to delete the cookie.
+This sets the given cookie in the response. If the value is omitted, an response
+header with an expired data is used to delete the cookie.
 
 ```js
 export const getServerSideProps = handle({
@@ -30,4 +34,6 @@ export const getServerSideProps = handle({
 });
 ```
 
-See [pillarjs/cookies#cookies-set](https://github.com/pillarjs/cookies/tree/d2111627e8ff2e29f90e75d1f1cc4164c5a07a3f#cookiesset-name--value---options--) for more options.
+See
+[pillarjs/cookies#cookies-set](https://github.com/pillarjs/cookies/tree/d2111627e8ff2e29f90e75d1f1cc4164c5a07a3f#cookiesset-name--value---options--)
+for more options.
