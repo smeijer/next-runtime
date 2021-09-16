@@ -77,6 +77,10 @@ These are tests run by playwright, against a real next instance. Running next me
 
 That's where you find all the source files for `next-runtime`.
 
+**/docs**
+
+Is where you'll find the documentation. Run `npm run dev` in that directory to start the documentation webserver. All documentation content files can be found in `/docs/content`.
+
 ## Sponsor
 
 Are you, or your employer, a satisfied user of this, or any of [my other projects](https://meijer.ws/open-source). Then please [consider sponsoring](https://github.com/sponsors/smeijer) my work so I can dedicate more time to maintaining this kind of projects.
