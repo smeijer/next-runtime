@@ -63,6 +63,7 @@
     "lint-staged": "^11.1.2",
     "next": "11.1.2",
     "node-fetch": "^2.6.1",
+    "np": "^7.5.0",
     "playwright": "^1.14.1",
     "prettier": "^2.4.0",
     "react": "17.0.2",
