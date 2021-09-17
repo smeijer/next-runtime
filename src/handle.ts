@@ -41,11 +41,12 @@ type Handlers<
 
   // The GET request handler, this is the default getServerSideProps
   get?: (context: RuntimeContext<Q>) => RuntimeResponse<P>;
-} & {
-  // Body request handlers, awesome to submit forms to!
-  [Method in HttpMethodWithBody]?: (
-    context: RuntimeContext<Q> & RequestBody<F>,
-  ) => RuntimeResponse<P>;
+
+  // POST request handlers, awesome to submit forms to!
+  post?: (context: RuntimeContext<Q> & RequestBody<F>) => RuntimeResponse<P>;
+  put?: (context: RuntimeContext<Q> & RequestBody<F>) => RuntimeResponse<P>;
+  delete?: (context: RuntimeContext<Q> & RequestBody<F>) => RuntimeResponse<P>;
+  patch?: (context: RuntimeContext<Q> & RequestBody<F>) => RuntimeResponse<P>;
 };
 
 /**
