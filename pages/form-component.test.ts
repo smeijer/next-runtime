@@ -49,7 +49,7 @@ test('form component re-renders page on submit', async () => {
     message: 'hi from post',
   });
 
-  await sleep(3);
+  await sleep(100);
 
   // page should update with a new time from the get handler
   await expect(page).not.toMatchText('#time', firstRequestTime);
