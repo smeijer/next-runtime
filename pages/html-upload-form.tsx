@@ -1,5 +1,5 @@
-import { streamToBuffer } from '../lib/utils';
 import { handle, json } from '../src';
+import { streamToBuffer } from '../src/utils';
 
 type PageProps = any;
 
