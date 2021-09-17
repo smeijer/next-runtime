@@ -22,6 +22,6 @@ jobs:
           node-version: ${{ env.node }}
       - run: npm install
       - name: unit tests
-        run: npm test:unit
+        run: npm run test:unit
       - name: e2e tests
-        run: npm test:e2e
+        run: npm run test:e2e
