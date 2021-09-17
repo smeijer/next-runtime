@@ -258,8 +258,7 @@ export const Form = forwardRef(function Form(
     if (state.state === 'pending') return;
 
     const data = new FormData(form);
-    const url = form.action;
-    const method = form.method;
+    const url = props.action ?? form.action;
 
     setState({
       state: 'pending',
