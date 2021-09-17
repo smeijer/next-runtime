@@ -10,6 +10,11 @@ import {
   useState,
 } from 'react';
 
+import {
+  HttpMethod,
+  httpMethodsWithBody,
+  HttpMethodWithBody,
+} from './http-methods';
 import { useRefs } from './utils/useRefs';
 
 type Store = {
@@ -68,12 +73,17 @@ export function usePendingFormSubmit() {
   return store.pending ? store.lastState : null;
 }
 
-type FetchDataOptions = { method: 'get' | 'post'; url: string; data: FormData };
-async function fetchData({ method, url, data }: FetchDataOptions) {
-  let response: Response;
+type FetchDataOptions = {
+  method: HttpMethod | Uppercase<HttpMethod>;
+  url: string;
+  data: FormData;
+};
 
-  switch (method) {
-    case 'get': {
+async function fetchData({ method: methodArg, url, data }: FetchDataOptions) {
+  const getFetchResponse = (): Promise<Response> => {
+    const method = methodArg.toLowerCase() as Lowercase<HttpMethod>;
+
+    if (method === 'get') {
       const _url = new URL(url);
 
       for (const [field, value] of data.entries()) {
@@ -85,28 +95,26 @@ async function fetchData({ method, url, data }: FetchDataOptions) {
       }
 
       history.replaceState(null, null, url);
-      response = await fetch(_url.toString(), {
+
+      return fetch(_url.toString(), {
         method: 'get',
         headers: { accept: 'application/json' },
       });
-
-      break;
     }
 
-    case 'post': {
-      response = await fetch(url, {
-        method: 'post',
+    if (httpMethodsWithBody.includes(method as HttpMethodWithBody)) {
+      return fetch(url, {
+        // patch must be in all caps: https://github.com/github/fetch/issues/254
+        method: method.toUpperCase(),
         headers: { accept: 'application/json' },
         body: data,
       });
-
-      break;
     }
 
-    default: {
-      throw Error('unsupported form method');
-    }
-  }
+    throw Error('unsupported form method');
+  };
+
+  const response = await getFetchResponse();
 
   if (response.status >= 300) {
     throw new Error(`[${response.status}]: ${response.statusText}`);
@@ -118,10 +126,10 @@ async function fetchData({ method, url, data }: FetchDataOptions) {
 export type FormProps = {
   /**
    *  The method to use for form submissions. `get` appends the form-data to the
-   *  URL in name/value pairs, while `post` sends the form-data as an HTTP post
+   *  URL in name/value pairs, while others send the form-data as an HTTP post
    *  transaction. Defaults to `post`.
    */
-  method?: 'get' | 'post';
+  method?: HttpMethod | Uppercase<HttpMethod>;
   /**
    * A callback that's invoked on form submission. Call `event.preventDefault()`
    * if you don't want Form to handle your submission. For example to abort in
@@ -250,8 +258,7 @@ export const Form = forwardRef(function Form(
     if (state.state === 'pending') return;
 
     const data = new FormData(form);
-    const url = form.action;
-    const method = form.method;
+    const url = props.action ?? form.action;
 
     setState({
       state: 'pending',

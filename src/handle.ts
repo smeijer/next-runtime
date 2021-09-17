@@ -2,6 +2,7 @@ import accepts from 'accepts';
 import { ServerResponse } from 'http';
 import { Response } from 'node-fetch';
 
+import { httpMethodsWithBody, HttpMethodWithBody } from './http-methods';
 import { log } from './lib/log';
 import { notFound, TypedResponse } from './responses';
 import { bodyparser, BodyParserOptions } from './runtime/body-parser';
@@ -40,9 +41,11 @@ type Handlers<
 
   // The GET request handler, this is the default getServerSideProps
   get?: (context: RuntimeContext<Q>) => RuntimeResponse<P>;
-
-  // The POST request handler, awesome to submit forms to!
-  post?: (context: RuntimeContext<Q> & RequestBody<F>) => RuntimeResponse<P>;
+} & {
+  // Body request handlers, awesome to submit forms to!
+  [Method in HttpMethodWithBody]?: (
+    context: RuntimeContext<Q> & RequestBody<F>,
+  ) => RuntimeResponse<P>;
 };
 
 /**
@@ -107,7 +110,7 @@ export function handle<
     // also handle complex objects in query params
     context.query = expandQueryParams(context.query);
 
-    if (method === 'post') {
+    if (httpMethodsWithBody.includes(method as HttpMethodWithBody)) {
       await bodyparser<F>(req, {
         limits: handlers.limits,
         onFile: handlers.upload,
