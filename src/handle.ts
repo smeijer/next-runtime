@@ -1,12 +1,12 @@
 import accepts from 'accepts';
+import { ServerResponse } from 'http';
+import { Response } from 'node-fetch';
 
-import { USE_ASYNC_LOCAL_STORAGE } from './lib/flags';
 import { log } from './lib/log';
-import { notFound } from './responses';
+import { notFound, TypedResponse } from './responses';
 import { bodyparser, BodyParserOptions } from './runtime/body-parser';
 import { bindCookieJar, CookieJar } from './runtime/cookies';
 import { bindTypedHeaders, TypedHeaders } from './runtime/headers';
-import { asyncLocalStorage } from './runtime/local-storage';
 import { expandQueryParams } from './runtime/query-params';
 import {
   GetServerSideProps,
@@ -17,6 +17,10 @@ import { ParsedUrlQuery } from './types/querystring';
 
 export type RuntimeContext<Q extends ParsedUrlQuery> =
   GetServerSidePropsContext<Q> & CookieJar & TypedHeaders;
+
+export type RuntimeResponse<P extends { [key: string]: any }> = MaybePromise<
+  GetServerSidePropsResult<P> | TypedResponse<P>
+>;
 
 export type RequestBody<F> = { req: { body: F } };
 
@@ -35,15 +39,59 @@ type Handlers<
   upload?: BodyParserOptions['onFile'];
 
   // The GET request handler, this is the default getServerSideProps
-  get?: (
-    context: RuntimeContext<Q>,
-  ) => MaybePromise<GetServerSidePropsResult<P>>;
+  get?: (context: RuntimeContext<Q>) => RuntimeResponse<P>;
 
   // The POST request handler, awesome to submit forms to!
-  post?: (
-    context: RuntimeContext<Q> & RequestBody<F>,
-  ) => MaybePromise<GetServerSidePropsResult<P>>;
+  post?: (context: RuntimeContext<Q> & RequestBody<F>) => RuntimeResponse<P>;
 };
+
+/**
+ * Transfer the properties from the Response object to the response to
+ * the response stream, and return a next compatible object.
+ */
+function applyResponse<T>(
+  response: TypedResponse<T> | GetServerSidePropsResult<T>,
+  target: ServerResponse,
+): GetServerSidePropsResult<T> {
+  if (!(response instanceof Response)) {
+    return response;
+  }
+
+  target.statusCode = response.status;
+  target.statusMessage = response.statusText;
+
+  for (const [key, value] of response.headers) {
+    target.setHeader(key, value);
+  }
+
+  switch (response.__next_type__) {
+    case 'json': {
+      return { props: JSON.parse(response.body.toString()) };
+    }
+
+    case 'redirect': {
+      return {
+        redirect: {
+          destination: response.headers.get('Location'),
+          permanent: response.status === 301,
+        },
+      };
+    }
+
+    case 'not-found': {
+      return {
+        notFound: true,
+      };
+    }
+  }
+}
+
+/**
+ * sometimes we don't want to return real data, as next might use that to add
+ * not-found or redirect headers. Which then cause `sorry, headers already sent`
+ * errors
+ */
+const VOID_NEXT_RESPONSE = { props: { dummy: '' } } as any;
 
 export function handle<
   P extends { [key: string]: any },
@@ -55,9 +103,6 @@ export function handle<
     const accept = accepts(req);
 
     const method = req.method.toLowerCase();
-    if (typeof handlers[method] !== 'function') {
-      return notFound();
-    }
 
     // also handle complex objects in query params
     context.query = expandQueryParams(context.query);
@@ -70,32 +115,40 @@ export function handle<
       });
     }
 
-    async function handle() {
+    async function handle(): Promise<GetServerSidePropsResult<P>> {
       bindCookieJar(context);
       bindTypedHeaders(context);
 
-      const result = await handlers[method](context);
+      const response = handlers[method]
+        ? ((await handlers[method](context)) as TypedResponse<P>)
+        : notFound(404);
+
+      const propResult = applyResponse(response, res);
+
+      if (response.__next_type__ === 'redirect') {
+        res.end();
+        return VOID_NEXT_RESPONSE;
+      }
 
       // Note, we can't make this api first. That will break shallow rerender
       switch (accept.type(['html', 'json'])) {
         case 'html': {
-          res.setHeader('content-type', 'text/html');
-          return result;
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          return propResult as any;
         }
         case 'json': {
-          res.setHeader('content-type', 'application/json');
-          res.end(JSON.stringify(result.props || {}));
-          return result;
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.end(
+            response.body ||
+              JSON.stringify('props' in propResult ? propResult.props : {}),
+          );
+          return VOID_NEXT_RESPONSE;
         }
         default: {
           log.info('unsupported mime type requested');
-          return result;
+          return VOID_NEXT_RESPONSE;
         }
       }
-    }
-
-    if (USE_ASYNC_LOCAL_STORAGE) {
-      return asyncLocalStorage.run(context, handle);
     }
 
     return handle();
