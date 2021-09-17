@@ -40,6 +40,8 @@ export const getServerSideProps = handle({
   async post({ req: { body } }) {
     return json({ message: 'Thanks for your submission!' });
   },
+
+  // patch, put, delete
 });
 
 export default function Home({ name, message }) {

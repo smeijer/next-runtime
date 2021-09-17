@@ -41,9 +41,21 @@ export function slugify(name) {
 }
 
 function CustomLink({ href, children }) {
+  const onClick = (event) => {
+    if (!href.startsWith('#')) return;
+    event.preventDefault();
+    history.pushState(null, document.title, href);
+
+    document.body.querySelector(href)?.scrollIntoView({
+      behavior: 'smooth',
+    });
+  };
+
   return (
     <Link href={href}>
-      <a className="!text-blue-600 !font-normal underline">{children}</a>
+      <a onClick={onClick} className="!text-blue-600 !font-normal underline">
+        {children}
+      </a>
     </Link>
   );
 }
@@ -102,10 +114,7 @@ const components = {
   Head,
 };
 
-function NavLink({ href, children }) {
-  const { asPath } = useRouter();
-  const active = asPath === href;
-
+function NavLink({ href, children, active }) {
   return (
     <div
       className={cn(
@@ -156,7 +165,7 @@ function SocialBar() {
   );
 }
 
-function Sidebar() {
+function Sidebar({ selected }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -201,7 +210,11 @@ function Sidebar() {
                   {entry.caption}
                 </NavCaption>
               ) : (
-                <NavLink key={`${idx}-${entry.slug}`} href={`/${entry.slug}`}>
+                <NavLink
+                  key={`${idx}-${entry.slug}`}
+                  href={`/${entry.slug}`}
+                  active={entry.slug === selected.slug}
+                >
                   {entry.title}
                 </NavLink>
               ),
@@ -232,7 +245,7 @@ export default function DocsPage({ source, frontMatter, next, prev, page }) {
       />
       <div className="flex flex-col min-h-screen">
         <div className="flex flex-auto w-full max-w-6xl mx-auto">
-          <Sidebar />
+          <Sidebar selected={page} />
 
           <div className="overflow-x-hidden px-8 pb-16 mx-auto w-full max-w-prose">
             <h1 className="text-5xl tracking-tight font-light mt-8 mb-6 relative text-gray-900">

@@ -139,13 +139,55 @@ curl \
   https://example.com/page-path
 ```
 
+## Handle `PATCH` Requests
+
+Define the `patch` handler to support `PATCH` requests. They behave the same as
+`POST` requests, so please [check there](#handle-post-requests) for more
+specifics.
+
+```ts
+import { handle, json } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  async patch() {},
+});
+```
+
+## Handle `PUT` Requests
+
+Define the `put` handler to support `PUT` requests. They behave the same as
+`POST` requests, so please [check there](#handle-post-requests) for more
+specifics.
+
+```ts
+import { handle, json } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  async put() {},
+});
+```
+
+## Handle `DELETE` Requests
+
+Define the `delete` handler to support `DELETE` requests. They behave the same
+as `POST` requests, so please [check there](#handle-post-requests) for more
+specifics.
+
+```ts
+import { handle, json } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  async delete() {},
+});
+```
+
 ## Handle File Uploads
 
-To allow `POST` requests to include files, you'll need to set the `uploadDir` or
-define the `upload` handler. Note that this handler accompanies the `post`
-handler. You can have a `post` without an `upload` handler, but an `upload`
-without a `post` makes no sense. When neither of the options are provided, file
-uploads will be ignored.
+To allow `POST`, `PATCH` and `PUT` requests to include files, you'll need to set
+the `uploadDir` or define the `upload` handler. Note that this a supporting
+handler that accompanies the method handlers. You can have a `post` without an
+`upload` handler, but an `upload` without a `post` makes no sense. When neither
+of the options are provided, file uploads will be ignored.
 
 The examples below are based on the following form:
 
@@ -281,7 +323,10 @@ Our `RuntimeContext` extends `GetServerSidepropsContext` with convenient
 ```ts
 export const getServerSideProps = handle<PageProps, UrlQuery, FormData>({
   async upload({ file: File, stream: ReadableStream }): void {},
-  async get({ params: UrlQuery }: RuntimeContext): PageProps {},
-  async post({ req: { body: FormData } }: RuntimeContext): PageProps {},
+  async get({ params: UrlQuery }: RuntimeContext): RuntimeResponse {},
+  async post({ req: { body: FormData } }: RuntimeContext): RuntimeResponse {},
+  async put({ req: { body: FormData } }: RuntimeContext): RuntimeResponse {},
+  async patch({ req: { body: FormData } }: RuntimeContext): RuntimeResponse {},
+  async delete({ req: { body: FormData } }: RuntimeContext): RuntimeResponse {},
 });
 ```
