@@ -52,7 +52,7 @@ async function request(
 }
 
 export async function next(getServerSideProps: GetServerSideProps) {
-  let lastRequest = Date.now();
+  let lastRequest;
 
   const server = http.createServer((req, res) => {
     lastRequest = Date.now();
@@ -78,10 +78,10 @@ export async function next(getServerSideProps: GetServerSideProps) {
   });
 
   const interval = setInterval(() => {
-    if (Date.now() - lastRequest < 50) return;
+    if (!lastRequest || Date.now() - lastRequest < 250) return;
     clearInterval(interval);
     server.close();
-  }, 3);
+  }, 25);
 
   const url = await listen(server);
 
