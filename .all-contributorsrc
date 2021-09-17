@@ -31,6 +31,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "itsMapleLeaf",
+      "name": "Darius",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19603573?v=4",
+      "profile": "http://mapleleaf.dev",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
