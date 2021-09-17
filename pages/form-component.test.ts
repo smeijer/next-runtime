@@ -4,6 +4,9 @@ export async function clear(page, selector) {
   }, selector);
 }
 
+const sleep = (duration) =>
+  new Promise((resolve) => setTimeout(resolve, duration));
+
 test('form component re-renders page on submit', async () => {
   await page.goto('http://localhost:4000/form-component');
 
@@ -45,6 +48,8 @@ test('form component re-renders page on submit', async () => {
     },
     message: 'hi from post',
   });
+
+  await sleep(3);
 
   // page should update with a new time from the get handler
   await expect(page).not.toMatchText('#time', firstRequestTime);
