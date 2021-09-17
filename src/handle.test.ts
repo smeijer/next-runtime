@@ -2,12 +2,33 @@ import FormData from 'form-data';
 
 import { next } from './__utils__/server';
 import { handle } from './handle';
-import { json, notFound, redirect } from './responses';
+import { json } from './responses';
 import { streamToBuffer } from './utils';
+
+test('handles next native return shapes', async () => {
+  const fetch = await next(
+    handle<{ name: string }>({
+      async get() {
+        return { props: { name: 'person' } };
+      },
+    }),
+  );
+
+  const standardResponse = await fetch('/', {
+    method: 'GET',
+    headers: { accept: 'text/html' },
+  });
+  expect(standardResponse.status).toEqual(200);
+  expect(standardResponse.body).toEqual({ props: { name: 'person' } });
+
+  const jsonResponse = await fetch();
+  expect(jsonResponse.status).toEqual(200);
+  expect(jsonResponse.body).toEqual({ name: 'person' });
+});
 
 test('handles to get requests', async () => {
   const fetch = await next(
-    handle({
+    handle<{ method: string }>({
       async get({ req: { method } }) {
         return json({ method });
       },
@@ -111,9 +132,10 @@ test('returns notFound when method handler is undefined', async () => {
 
   const response = await fetch('/', {
     method: 'POST',
+    body: '',
   });
 
-  expect(response.body).toEqual({ notFound: true });
+  expect(response.status).toEqual(404);
 });
 
 test('expands post body', async () => {
@@ -299,106 +321,4 @@ test('handles file size limit', async () => {
       },
     ],
   });
-});
-
-test('handles redirects', async () => {
-  const fetch = await next(
-    handle({
-      async get() {
-        return redirect('/other-page', { permanent: true });
-      },
-    }),
-  );
-
-  const response = await fetch('/', {
-    method: 'GET',
-    headers: { accept: 'text/html' },
-  });
-
-  expect(response.body).toEqual({
-    redirect: { destination: '/other-page', permanent: true },
-  });
-});
-
-test('handles notFound', async () => {
-  const fetch = await next(
-    handle({
-      async get() {
-        return notFound();
-      },
-    }),
-  );
-
-  const response = await fetch('/', {
-    method: 'GET',
-    headers: { accept: 'text/html' },
-  });
-
-  expect(response.body).toEqual({ notFound: true });
-});
-
-test('can read request headers', async () => {
-  const fetch = await next(
-    handle({
-      async get({ req }) {
-        return json({ header: req.getHeader('x-custom') });
-      },
-    }),
-  );
-
-  const response = await fetch('/', {
-    headers: { 'x-custom': 'one' },
-  });
-
-  expect(response.body).toEqual({ header: 'one' });
-});
-
-test('can set response headers', async () => {
-  const fetch = await next(
-    handle({
-      async get({ req: { method }, res }) {
-        res.setHeader('session', 'one');
-        // note: this requires node > 16.4
-        return json({ method }, { headers: { 'alt-syntax': 'two' } });
-      },
-    }),
-  );
-
-  const response = await fetch('/');
-  expect(response.headers.get('session')).toEqual('one');
-  expect(response.headers.get('alt-syntax')).toEqual('two');
-});
-
-test('can get request cookies', async () => {
-  const fetch = await next(
-    handle({
-      async get({ req }) {
-        return json({ cookie: req.getCookie('session') });
-      },
-    }),
-  );
-
-  const response = await fetch('/', {
-    cookies: {
-      session: 'one',
-    },
-  });
-
-  expect(response.body).toEqual({ cookie: 'one' });
-});
-
-test('can set response cookies', async () => {
-  const fetch = await next(
-    handle({
-      async get({ req: { method }, res }) {
-        res.setCookie('session', 'two');
-        return json({ method });
-      },
-    }),
-  );
-
-  const response = await fetch('/');
-  expect(response.headers.get('set-cookie')).toEqual(
-    'session=two; path=/; httponly',
-  );
 });
