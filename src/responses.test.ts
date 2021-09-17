@@ -63,7 +63,6 @@ test('can set response headers', async () => {
     handle({
       async get({ req: { method }, res }) {
         res.setHeader('session', 'one');
-        // note: this requires node > 16.4
         return json({ method }, { headers: { 'alt-syntax': 'two' } });
       },
     }),
@@ -72,6 +71,20 @@ test('can set response headers', async () => {
   const response = await fetch('/');
   expect(response.headers.get('session')).toEqual('one');
   expect(response.headers.get('alt-syntax')).toEqual('two');
+});
+
+test('can set response code and status message', async () => {
+  const fetch = await next(
+    handle({
+      async get({ req: { method }, res }) {
+        return json({ method }, { status: 418, statusText: `I\'m a teapot` });
+      },
+    }),
+  );
+
+  const response = await fetch('/');
+  expect(response.status).toEqual(418);
+  expect(response.statusText).toEqual(`I'm a teapot`);
 });
 
 test('can get request cookies', async () => {

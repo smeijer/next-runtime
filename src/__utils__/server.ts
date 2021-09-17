@@ -45,6 +45,7 @@ async function request(
 
   return {
     status: response.status,
+    statusText: response.statusText,
     headers: response.headers,
     body: await response.json(),
   };
