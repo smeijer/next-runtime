@@ -1,9 +1,17 @@
-import { Headers, Response, ResponseInit } from 'node-fetch';
+import {
+  Headers,
+  Response,
+  ResponseInit as FullResponseInit,
+} from 'node-fetch';
 
 import { RuntimeResponse } from './handle';
 
 export type TypedResponse<T extends { [key: string]: any }> = Response;
 
+export type ResponseInit = Pick<
+  FullResponseInit,
+  'status' | 'statusText' | 'headers'
+>;
 export type ResponseType = 'not-found' | 'redirect' | 'json';
 
 function createResponse<T>(

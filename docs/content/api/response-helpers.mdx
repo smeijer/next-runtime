@@ -5,38 +5,80 @@ title: Response Helpers
 next-runtime includes a few convenient helpers to increase the readability of
 your return statements. Usage is recommended, but entirely optional.
 
-As they simply transform your input object to a shape that next understands, you
-may also use them in the standard `getServerSideProps` functions if you want.
-
 ## json
 
-Wraps the input object in `{ props: { ... } }`, which are then provided as props
-to the page component.
+Returns the provided data as response in case of JSON api requests. For standard
+HTML requests, the prop are wrapped with `{ props: { ... } }` and handed over to
+Next.js.
 
 ```js
-import { json } from 'next-runtime';
+import { handle, json } from 'next-runtime';
 
-export const getServerSideProps = () => {
-  // { props: { hello: 'world' } }
-  return json({ hello: 'world' });
-};
+export const getServerSideProps = handle({
+  async get() {
+    // { props: { hello: 'world' } }
+    return json({ hello: 'world' }, options);
+  },
+});
 ```
+
+**Options**
+
+As second argument a status code, or response initialization object can be
+provided.
+
+- **statusCode** _json(data, statusCode)_
+
+  If you just need a status code other than 200, you might want to call it like
+  `json(data, number)`. In that case, the statusCode will be applied to the
+  response stream.
+
+- **ResponseInit** _json(data, ResponseInit)_
+
+  Use this if you need more control over the response. For example if you need a
+  custom `statusText` or need to send additional headers. See
+  [response options](#response-options) for more.
 
 ## redirect
 
-Redirect translates your destination path and options to the redirect object
-that Next understands.
-
-The options are optional, and `permanent` defaults to false.
+In case of JSON api requests, `redirect` sets the location header to forward the
+requests. For standard HTML requests, the input is mapped to the
+`{ redirect: { destination } }` format and handed over to Next.js.
 
 ```js
-import { redirect } from 'next-runtime';
+import { handle, redirect } from 'next-runtime';
 
-export const getServerSideProps = () => {
-  // { redirect: { destination: '/other-page', permanent: false } }
-  return redirect('/other-page');
-};
+export const getServerSideProps = handle({
+  async get() {
+    // { redirect: { destination: '/other-page', permanent: false } }
+    return redirect('/other-page', options);
+  },
+});
 ```
+
+**Options**
+
+As second argument, a status code, next-like options, or response initialization
+object can be provided. The options are optional, and the redirect defaults to a
+temporary redirect (status: 302).
+
+- **statusCode** _redirect(data, statusCode)_
+
+  If you prefer specifying the status code like `301` or `302`, you might want
+  to call it like `redirect('/destination', number)`. In that case, the
+  statusCode will be applied to the response stream.
+
+- **options** _redirect(destination, { permanent: boolean })_
+
+  A more next-like signature. Specify `{ permanent: true }` to mark it as a
+  permanent redirect, or `{ permanent: false }` to mark the redirect as
+  temporary.
+
+- **ResponseInit** _json(data, ResponseInit)_
+
+  Use this if you need more control over the response. For example if you need a
+  custom `statusText` or need to send additional headers. See
+  [response options](#response-options) for more.
 
 ## notFound
 
@@ -45,10 +87,87 @@ exist. Either because it really doesn't, or they shouldn't know it does because
 they lack permissions.
 
 ```js
-import { notFound } from 'next-runtime';
+import { handle, notFound } from 'next-runtime';
 
-export const getServerSideProps = () => {
-  // { notFound: true }
-  return notFound();
-};
+export const getServerSideProps = handle({
+  async get() {
+    // { notFound: true }
+    return notFound(options);
+  },
+});
+```
+
+**Options**
+
+As first argument, a status code, or response initialization object can be
+provided. The options are optional, and the statusCode defaults to 404.
+
+- **statusCode** _notFound(statusCode)_
+
+  If you need a more specific (sub) status, you might want to call it like
+  `notFound(number)`. In that case, the statusCode will be applied to the
+  response stream.
+
+- **ResponseInit** _notFound(ResponseInit)_
+
+  Use this if you need more control over the response. For example if you need a
+  custom `statusText` or need to send additional headers. See
+  [response options](#response-options) for more.
+
+## Response Options
+
+Every response helper accepts `ResponseInit` as optional argument.
+`ResponseInit` is based on the
+[`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)
+interface of the `Fetch API`
+
+The following options are supported:
+
+- **status** _number_
+
+  The status code of the response. (e.g., `200` for a success, and `401` for
+  unauthorized).
+
+- **statusText** _string_
+
+  The status message corresponding to the status code. (e.g., `OK` for `200`);
+
+- **headers** _Headers | { [key: string]: string }_
+
+  Any headers that you want to add to your response, contained within a Headers
+  object, or object literal of string key/value pairs.
+
+**Example**
+
+```js
+import { handle, json } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  async get() {
+    return json(
+      { hello: 'world' },
+      {
+        status: 200,
+        statusText: 'OK',
+        headers: {
+          'x-server-time': Date.now(),
+        },
+      },
+    );
+  },
+});
+```
+
+## Common mistakes
+
+These response helpers return an
+[`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response)
+object. Thereby, they won't function with standard `getServerSideProps`
+functions. If you're getting a serialization error like below, then you're
+probably using these out of the context of `next-runtime/handle`.
+
+```bash
+Server Error
+Error: Error serializing props returned from `getServerSideProps` in "...".
+Reason: Props must be returned as a plain object from getServerSideProps: `{ props: { ... } }` (received: `[object Undefined]`).
 ```
