@@ -7,7 +7,6 @@ import {
   useEffect,
   useReducer,
   useRef,
-  useState,
 } from 'react';
 
 import {
@@ -16,6 +15,7 @@ import {
   HttpMethodWithBody,
 } from './http-methods';
 import { useRefs } from './utils/useRefs';
+import { useSafeState } from './utils/useSafeState';
 
 type Store = {
   pending: number;
@@ -79,48 +79,42 @@ type FetchDataOptions = {
   data: FormData;
 };
 
-async function fetchData({ method: methodArg, url, data }: FetchDataOptions) {
-  const getFetchResponse = (): Promise<Response> => {
-    const method = methodArg.toLowerCase() as Lowercase<HttpMethod>;
+async function fetchData({
+  method: methodArg,
+  url,
+  data,
+}: FetchDataOptions): Promise<Response> {
+  const method = methodArg.toLowerCase() as Lowercase<HttpMethod>;
 
-    if (method === 'get') {
-      const _url = new URL(url);
+  if (method === 'get') {
+    const _url = new URL(url);
 
-      for (const [field, value] of data.entries()) {
-        if (typeof value === 'string') {
-          _url.searchParams.set(field, value);
-        } else {
-          throw new Error('Cannot submit binary form data using GET');
-        }
+    for (const [field, value] of data.entries()) {
+      if (typeof value === 'string') {
+        _url.searchParams.set(field, value);
+      } else {
+        throw new Error('Cannot submit binary form data using GET');
       }
-
-      history.replaceState(null, null, url);
-
-      return fetch(_url.toString(), {
-        method: 'get',
-        headers: { accept: 'application/json' },
-      });
     }
 
-    if (httpMethodsWithBody.includes(method as HttpMethodWithBody)) {
-      return fetch(url, {
-        // patch must be in all caps: https://github.com/github/fetch/issues/254
-        method: method.toUpperCase(),
-        headers: { accept: 'application/json' },
-        body: data,
-      });
-    }
+    history.replaceState(null, null, url);
 
-    throw Error('unsupported form method');
-  };
-
-  const response = await getFetchResponse();
-
-  if (response.status >= 300) {
-    throw new Error(`[${response.status}]: ${response.statusText}`);
+    return fetch(_url.toString(), {
+      method: 'get',
+      headers: { accept: 'application/json' },
+    });
   }
 
-  return response.json();
+  if (httpMethodsWithBody.includes(method as HttpMethodWithBody)) {
+    return fetch(url, {
+      // patch must be in all caps: https://github.com/github/fetch/issues/254
+      method: method.toUpperCase(),
+      headers: { accept: 'application/json' },
+      body: data,
+    });
+  }
+
+  throw Error('unsupported form method');
 }
 
 export type FormProps = {
@@ -179,12 +173,13 @@ export const Form = forwardRef(function Form(
   }: FormProps,
   forwardRef,
 ) {
-  const [state, setState] = useState<
+  type FormState =
     | { state: 'idle'; error?: string; data?: unknown }
     | { state: 'pending'; data: FetchDataOptions }
-    | { state: 'success'; data: Record<string, unknown> }
-    | { state: 'error'; data?: unknown; error: string }
-  >({ state: 'idle' });
+    | { state: 'success'; data: Record<string, unknown>; redirect?: string }
+    | { state: 'error'; data?: unknown; error: string };
+
+  const [state, setState] = useSafeState<FormState>({ state: 'idle' });
 
   const router = useRouter();
   const ref = useRefs<HTMLFormElement>(forwardRef);
@@ -194,15 +189,16 @@ export const Form = forwardRef(function Form(
   handlers.current.onSuccess = onSuccess;
 
   useEffect(() => {
-    if (!shallow && state.state === 'success') {
-      // router is undefined in tests
-      void router?.replace(router.asPath, undefined, { scroll: false });
+    if (shallow || state.state !== 'success') return;
+
+    if (state.redirect) {
+      return void router.push(state.redirect, undefined, { scroll: true });
     }
+
+    void router.replace(router.asPath, undefined, { scroll: false });
   }, [state.state, shallow]);
 
   useEffect(() => {
-    let mounted = true;
-
     async function transition() {
       switch (state.state) {
         case 'pending': {
@@ -212,11 +208,24 @@ export const Form = forwardRef(function Form(
           });
 
           try {
-            const result = await fetchData(state.data);
-            if (!mounted) return;
-            setState({ ...state, state: 'success', data: result });
+            const response = await fetchData(state.data);
+
+            if (response.ok) {
+              setState({
+                ...state,
+                state: 'success',
+                data: await response.json(),
+                redirect: response.redirected ? response.url : undefined,
+              });
+            } else {
+              setState({
+                ...state,
+                state: 'error',
+                data: await response.json(),
+                error: `[${response.status}]: ${response.statusText}`,
+              });
+            }
           } catch (e) {
-            if (!mounted) return;
             setState({ ...state, state: 'error', error: e.message });
           } finally {
             submission.done();
@@ -243,10 +252,6 @@ export const Form = forwardRef(function Form(
     }
 
     void transition();
-
-    return () => {
-      mounted = false;
-    };
   }, [state]);
 
   const handleSubmit = async (event) => {
