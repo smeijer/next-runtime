@@ -176,8 +176,7 @@ export const Form = forwardRef(function Form(
   type FormState =
     | { state: 'idle'; error?: string; data?: unknown }
     | { state: 'pending'; data: FetchDataOptions }
-    | { state: 'success'; data: Record<string, unknown> }
-    | { state: 'redirect'; url: string }
+    | { state: 'success'; data: Record<string, unknown>; redirect?: string }
     | { state: 'error'; data?: unknown; error: string };
 
   const [state, setState] = useSafeState<FormState>({ state: 'idle' });
@@ -190,14 +189,13 @@ export const Form = forwardRef(function Form(
   handlers.current.onSuccess = onSuccess;
 
   useEffect(() => {
-    if (shallow) return;
-    if (state.state === 'success') {
-      // router is undefined in tests
-      void router?.replace(router.asPath, undefined, { scroll: false });
+    if (shallow || state.state !== 'success') return;
+
+    if (state.redirect) {
+      return void router.push(state.redirect, undefined, { scroll: true });
     }
-    if (state.state === 'redirect') {
-      void router?.push(state.url, undefined, { scroll: false });
-    }
+
+    void router.replace(router.asPath, undefined, { scroll: false });
   }, [state.state, shallow]);
 
   useEffect(() => {
@@ -212,16 +210,12 @@ export const Form = forwardRef(function Form(
           try {
             const response = await fetchData(state.data);
 
-            if (response.redirected) {
-              setState({
-                state: 'redirect',
-                url: response.url,
-              });
-            } else if (response.ok) {
+            if (response.ok) {
               setState({
                 ...state,
                 state: 'success',
                 data: await response.json(),
+                redirect: response.redirected ? response.url : undefined,
               });
             } else {
               setState({
