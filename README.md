@@ -57,33 +57,14 @@ export default function Home({ name, message }) {
 }
 ```
 
-## Contributing
-
-There are a few surprising things going on in this repo. We have two test runners, as well as two tsconfig files. Let me explain why;
-
-**npm run test:unit**
-
-This is a basic ts-jest runner that runs tests located in `./src`. The tests will use a fake next server to test our functionality, without depending on a next build.
-
-**npm run test:e2e**
-
-These are tests run by playwright, against a real next instance. Running next means that we need a `/pages` directory. Hence, the test files are located in `/pages`. That directory now serves as place for e2e tests, which can also serve as "examples".
-
-**tsconfig.build.json**
-
-`test:e2e` is also the reason why we need two tsconfigs. `tsconfig.build.json` is used to build the lib. Because the spawning of next for e2e tests, automatically create or adjusts the main `tsconfig.json`. Which breaks our build.
-
-**/src**
-
-That's where you find all the source files for `next-runtime`.
-
-**/docs**
-
-Is where you'll find the documentation. Run `npm run dev` in that directory to start the documentation webserver. All documentation content files can be found in `/docs/content`.
-
 ## Sponsor
 
 Are you, or your employer, a satisfied user of this, or any of [my other projects](https://meijer.ws/open-source). Then please [consider sponsoring](https://github.com/sponsors/smeijer) my work so I can dedicate more time to maintaining this kind of projects.
+
+## Contributing
+
+Please check [contributing.md](/CONTRIBUTING.md). It contains info about the structure of this repo
+to help you get up and running.
 
 ## Contributors
 
