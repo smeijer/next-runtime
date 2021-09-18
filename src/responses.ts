@@ -2,9 +2,7 @@ import { Headers, Response, ResponseInit } from 'node-fetch';
 
 import { RuntimeResponse } from './handle';
 
-export type TypedResponse<T extends { [key: string]: any }> = Response & {
-  __next_type__: ResponseType;
-};
+export type TypedResponse<T extends { [key: string]: any }> = Response;
 
 export type ResponseType = 'not-found' | 'redirect' | 'json';
 
@@ -14,7 +12,7 @@ function createResponse<T>(
   type: ResponseType,
 ): TypedResponse<T> {
   const response = new Response(JSON.stringify(body), init) as TypedResponse<T>;
-  response.__next_type__ = type;
+  response.headers.set('x-next-runtime-type', type);
   return response;
 }
 

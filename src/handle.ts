@@ -65,10 +65,11 @@ function applyResponse<T>(
   target.statusMessage = response.statusText;
 
   for (const [key, value] of response.headers) {
+    if (key === 'x-next-runtime-type') continue;
     target.setHeader(key, value);
   }
 
-  switch (response.__next_type__) {
+  switch (response.headers.get('x-next-runtime-type')) {
     case 'json': {
       return { props: JSON.parse(response.body.toString()) };
     }
@@ -129,7 +130,7 @@ export function handle<
 
       const propResult = applyResponse(response, res);
 
-      if (response.__next_type__ === 'redirect') {
+      if ('redirect' in propResult) {
         res.end();
         return VOID_NEXT_RESPONSE;
       }
