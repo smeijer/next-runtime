@@ -145,7 +145,7 @@ export type FormProps = {
    *
    * @param error a string holding the statusCode & statusText that were returned
    */
-  onError?: (error: string) => void;
+  onError?: (error: FormError) => void;
   /**
    * Submit the form without updating the current page. The form will still be reset, but the
    * `get` handler is not rerun. Defaults to `false`.
@@ -156,6 +156,19 @@ export type FormProps = {
    */
   children: ReactNode;
 } & FormHTMLAttributes<HTMLFormElement>;
+
+type FormError = {
+  code: string | number;
+  message: string;
+};
+
+type ResponseData = Record<string, unknown>;
+
+type FormState =
+  | { state: 'idle'; data?: unknown; error?: FormError }
+  | { state: 'pending'; data: FetchDataOptions }
+  | { state: 'success'; data: ResponseData; redirect?: string }
+  | { state: 'error'; data?: ResponseData; error: FormError };
 
 /**
  * Replace your `form` with `Form` to submit it clientside using `fetch`, and get
@@ -173,12 +186,6 @@ export const Form = forwardRef(function Form(
   }: FormProps,
   forwardRef,
 ) {
-  type FormState =
-    | { state: 'idle'; error?: string; data?: unknown }
-    | { state: 'pending'; data: FetchDataOptions }
-    | { state: 'success'; data: Record<string, unknown>; redirect?: string }
-    | { state: 'error'; data?: unknown; error: string };
-
   const [state, setState] = useSafeState<FormState>({ state: 'idle' });
 
   const router = useRouter();
@@ -221,12 +228,19 @@ export const Form = forwardRef(function Form(
               setState({
                 ...state,
                 state: 'error',
-                data: await response.json(),
-                error: `[${response.status}]: ${response.statusText}`,
+                error: {
+                  code: response.status,
+                  message: response.statusText,
+                  ...(await response.json()),
+                },
               });
             }
           } catch (e) {
-            setState({ ...state, state: 'error', error: e.message });
+            setState({
+              ...state,
+              state: 'error',
+              error: { code: e.name, message: e.message },
+            });
           } finally {
             submission.done();
           }
