@@ -155,9 +155,9 @@ export type FormProps = {
    * The fields & content of the form. Make something pretty :-)
    */
   children: ReactNode;
-} & FormHTMLAttributes<HTMLFormElement>;
+} & Omit<FormHTMLAttributes<HTMLFormElement>, 'onError' | 'onSubmit'>;
 
-type FormError = {
+export type FormError = {
   code: string | number;
   message: string;
 };
@@ -216,12 +216,17 @@ export const Form = forwardRef(function Form(
 
           try {
             const response = await fetchData(state.data);
+            const isJson = response.headers
+              .get('content-type')
+              .startsWith('application/json');
+
+            const data = isJson ? await response.json() : undefined;
 
             if (response.ok) {
               setState({
                 ...state,
                 state: 'success',
-                data: await response.json(),
+                data,
                 redirect: response.redirected ? response.url : undefined,
               });
             } else {
@@ -231,7 +236,7 @@ export const Form = forwardRef(function Form(
                 error: {
                   code: response.status,
                   message: response.statusText,
-                  ...(await response.json()),
+                  ...data,
                 },
               });
             }

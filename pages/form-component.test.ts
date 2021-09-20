@@ -106,3 +106,28 @@ test('form component does not re-render page on shallow submit', async () => {
   // because this is a Form, we'll never get the post data
   await expect(page).not.toHaveSelector('pre', { timeout: 5000 });
 });
+
+test('form component calls onError on server error', async () => {
+  await page.goto('http://localhost:4000/form-component');
+
+  await expect(page).toHaveSelector('form');
+
+  await clear(page, 'input[name="name"]');
+  await page.type('input[name="name"]', 'error');
+
+  const response = page
+    .waitForResponse(
+      (resp) => resp.url() === page.url() && resp.status() === 422,
+    )
+    .then((r) => r.json());
+
+  await page.click('input[type="submit"]');
+
+  // verify json response
+  expect(await response).toEqual({
+    message: 'error from server',
+  });
+
+  // page should show the same request time as before
+  await expect(page).toMatchText('#error', 'error from server');
+});
