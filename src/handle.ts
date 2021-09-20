@@ -69,6 +69,17 @@ function applyResponse<T>(
     target.setHeader(key, value);
   }
 
+  switch (accepts(target.req).type(['html', 'json'])) {
+    case 'html': {
+      target.setHeader('Content-Type', 'text/html; charset=utf-8');
+      break;
+    }
+    case 'json': {
+      target.setHeader('Content-Type', 'application/json; charset=utf-8');
+      break;
+    }
+  }
+
   switch (response.headers.get('x-next-runtime-type')) {
     case 'json': {
       return { props: JSON.parse(response.body.toString()) };
@@ -105,7 +116,6 @@ export function handle<
 >(handlers: Handlers<P, Q, F>): GetServerSideProps<P, Q> {
   return async (context) => {
     const { req, res } = context;
-    const accept = accepts(req);
 
     const method = req.method.toLowerCase();
 
@@ -136,16 +146,13 @@ export function handle<
       }
 
       // Note, we can't make this api first. That will break shallow rerender
-      switch (accept.type(['html', 'json'])) {
+      switch (accepts(req).type(['html', 'json'])) {
         case 'html': {
-          res.setHeader('Content-Type', 'text/html; charset=utf-8');
           return propResult as any;
         }
         case 'json': {
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
           res.end(
-            response.body ||
-              JSON.stringify('props' in propResult ? propResult.props : {}),
+            JSON.stringify('props' in propResult ? propResult.props : {}),
           );
           return VOID_NEXT_RESPONSE;
         }
