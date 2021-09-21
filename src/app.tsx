@@ -5,7 +5,7 @@ import { ReactElement } from 'react';
 import { useFormSubmit } from './form';
 
 export function withNextRuntime(BaseApp?: (props: AppProps) => ReactElement) {
-  return ({ pageProps, ...rest }: AppProps) => {
+  return function NextRuntime({ pageProps, ...rest }: AppProps) {
     const pending = useFormSubmit();
 
     const props = {
