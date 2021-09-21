@@ -245,7 +245,10 @@ export const Form = forwardRef(function Form(
   }, [state.status]);
 
   const handleSubmit = async (event) => {
-    if (state.status === 'submitting') return;
+    if (state.status === 'submitting' || state.status === 'routing') {
+      event.preventDefault();
+      return;
+    }
 
     onSubmit?.(event);
     if (event.defaultPrevented) return;
