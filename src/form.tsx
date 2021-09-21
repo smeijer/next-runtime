@@ -44,6 +44,8 @@ const useStore = create<Store>((set, get) => ({
 
 export type FormSubmission = FormState & {
   isIdle: boolean;
+  isSubmitting: boolean;
+  isRouting: boolean;
   isLoading: boolean;
   isSuccess: boolean;
   isError: boolean;
@@ -61,7 +63,9 @@ export function useFormSubmit(name?: string): FormSubmission {
     () => ({
       ...state,
       isIdle: state.status === 'idle',
-      isLoading: state.status === 'loading',
+      isSubmitting: state.status === 'submitting',
+      isRouting: state.status === 'routing',
+      isLoading: state.status === 'submitting' || state.status === 'routing',
       isSuccess: state.status === 'success',
       isError: state.status === 'error',
     }),
@@ -125,7 +129,7 @@ export type FormProps = {
   onSubmit?: FormEventHandler<HTMLFormElement>;
 } & Omit<FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'method'>;
 
-type FormStatus = 'idle' | 'loading' | 'success' | 'error';
+type FormStatus = 'idle' | 'submitting' | 'routing' | 'success' | 'error';
 type FormState =
   | {
       status: 'idle';
@@ -135,16 +139,23 @@ type FormState =
       error?: FetchError | Error;
     }
   | {
-      status: 'loading';
+      status: 'submitting';
       formData: FormData;
       values: Record<string, unknown>;
       data?: Record<string, unknown> | null;
       error?: FetchError | Error;
     }
   | {
+      status: 'routing';
+      data: Record<string, unknown> | null;
+      redirect: { from: string; to: string };
+      formData: FormData;
+      values: Record<string, unknown>;
+      error?: FetchError | Error;
+    }
+  | {
       status: 'success';
       data: Record<string, unknown> | null;
-      redirect?: string;
       formData: FormData;
       values: Record<string, unknown>;
       error?: FetchError | Error;
@@ -176,7 +187,7 @@ export const Form = forwardRef(function Form(
   useEffect(() => {
     async function transition() {
       switch (state.status) {
-        case 'loading': {
+        case 'submitting': {
           try {
             const response = await fetchData({
               url:
@@ -186,13 +197,17 @@ export const Form = forwardRef(function Form(
               data: state.formData,
             });
 
-            const redirect = response.redirected ? response.url : undefined;
-
-            if (response.ok || redirect) {
+            if (response.redirected) {
+              set(name, {
+                status: 'routing',
+                data: await response.json(),
+                redirect: { from: location.href, to: response.url },
+                error: undefined,
+              });
+            } else if (response.ok) {
               set(name, {
                 status: 'success',
                 data: await response.json(),
-                redirect,
                 error: undefined,
               });
             } else {
@@ -211,12 +226,16 @@ export const Form = forwardRef(function Form(
           break;
         }
 
+        case 'routing': {
+          await router.push(state.redirect.to, undefined, { scroll: true });
+          set(name, {
+            status: 'success',
+          });
+          break;
+        }
+
         case 'success': {
           ref.current.reset();
-
-          if (state.redirect) {
-            await router.push(state.redirect, undefined, { scroll: true });
-          }
           break;
         }
       }
@@ -226,7 +245,7 @@ export const Form = forwardRef(function Form(
   }, [state.status]);
 
   const handleSubmit = async (event) => {
-    if (state.status === 'loading') return;
+    if (state.status === 'submitting') return;
 
     onSubmit?.(event);
     if (event.defaultPrevented) return;
@@ -240,7 +259,7 @@ export const Form = forwardRef(function Form(
     }
 
     set(name, {
-      status: 'loading',
+      status: 'submitting',
       formData,
       values,
     });

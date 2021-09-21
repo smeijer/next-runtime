@@ -31,7 +31,7 @@ export const getServerSideProps = handle<PageProps>({
 });
 
 export default function FormComponent(props: PageProps) {
-  const { status, values, error } = useFormSubmit();
+  const { status, values, error, isLoading } = useFormSubmit();
 
   if ('file' in props) {
     return <pre>{props.file.contents}</pre>;
@@ -50,9 +50,7 @@ export default function FormComponent(props: PageProps) {
         <input type="submit" />
       </Form>
 
-      {status === 'loading' ? (
-        <p id="status">{`submitting ${values.name}`}</p>
-      ) : null}
+      {isLoading ? <p id="status">{`submitting ${values.name}`}</p> : null}
     </>
   );
 }
