@@ -31,28 +31,33 @@ export const getServerSideProps = handle<PageProps>({
 });
 
 export default function FormComponent(props: PageProps) {
-  const { status, values, error } = useFormSubmit();
-
-  if ('file' in props) {
-    return <pre>{props.file.contents}</pre>;
-  }
+  const forms = [
+    useFormSubmit('form0'),
+    useFormSubmit('form1'),
+    useFormSubmit('form2'),
+    useFormSubmit('form3'),
+  ];
 
   return (
-    <>
-      {error ? <p id="error">{error.message}</p> : null}
-
-      <p id="message">
-        {props.message} <span id="time">{props.time}</span>
-      </p>
-      <Form method="post">
-        <input name="name" type="text" />
-        <input name="file" type="file" />
-        <input type="submit" />
-      </Form>
-
-      {status === 'loading' ? (
-        <p id="status">{`submitting ${values.name}`}</p>
-      ) : null}
-    </>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 16,
+        padding: 16,
+      }}
+    >
+      {Array.from({ length: forms.length }).map((_, idx) => (
+        <div key={idx} style={{ background: '#eee', padding: 8 }}>
+          <p>Form {idx}</p>
+          <Form name={`form${idx}`} method="post">
+            <input name="name" type="text" />
+            <input name="file" type="file" />
+            <input type="submit" />
+          </Form>
+          <p>status: {forms[idx].status}</p>
+        </div>
+      ))}
+    </div>
   );
 }
