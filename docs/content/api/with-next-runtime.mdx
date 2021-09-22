@@ -1,0 +1,52 @@
+---
+title: withNextRuntime
+---
+
+Unlike a standard HTML `<form>`, the `Form` component does not update the page
+props when the user submits the form. Instead, the
+[`useFormSubmit`](/api/use-form-submit) hook should be used to consume any
+pending or response data.
+
+If you wish to have the same behavior between `<form>` and `<Form>` (update the
+page on submit), then you can wrap your Next.js app component with our provider.
+
+<note>
+  Using the hook is the recommended approach to update the page props. The whole
+  purpose of this provider, is to force a full page update on state change. That
+  might not be what you want.
+</note>
+
+When including our provider, the pages will initially render with GET data.
+Which is Next.js default behavior. Once the form is submitted, the handler
+result data is provided to the page component.
+
+<note>
+  This provider is not needed when returning a `redirect` from mutation
+  handlers. It's only needed when returning `json`, and you need to have that
+  data in the page props.
+</note>
+
+Enough warnings, here are the implementation examples.
+
+## Example without custom app component
+
+Add the following code to `/pages/_app.js`
+
+```jsx
+import { withNextRuntime } from 'next-runtime/app';
+export default withNextRuntime();
+```
+
+## Example with custom app component
+
+Provide your App component as argument, if you're already using a custom one:
+
+```jsx
+import { withNextRuntime } from 'next-runtime/app';
+
+function MyApp({ Component, pageProps }) {
+  return <Component {...pageProps} />;
+}
+
+export default withNextRuntime(MyApp);
+```
