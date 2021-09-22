@@ -1,5 +1,5 @@
 import { handle, json } from '../src';
-import { Form, usePendingFormSubmit } from '../src/form';
+import { Form, useFormSubmit } from '../src/form';
 import { streamToBuffer } from '../src/utils';
 
 type PageProps = any;
@@ -21,12 +21,17 @@ export const getServerSideProps = handle<PageProps>({
 
   async post({ req: { body } }) {
     await sleep(50); // fake work
+
+    if (body.name === 'error') {
+      return json({ message: 'error from server' }, 422);
+    }
+
     return json({ ...body, message: 'hi from post' });
   },
 });
 
 export default function FormComponent(props: PageProps) {
-  const pending = usePendingFormSubmit();
+  const { status, values, error, isLoading } = useFormSubmit();
 
   if ('file' in props) {
     return <pre>{props.file.contents}</pre>;
@@ -34,17 +39,18 @@ export default function FormComponent(props: PageProps) {
 
   return (
     <>
+      {error ? <p id="error">{error.message}</p> : null}
+
       <p id="message">
         {props.message} <span id="time">{props.time}</span>
       </p>
-      <Form method="post" shallow={props.shallow}>
+      <Form method="post">
         <input name="name" type="text" />
         <input name="file" type="file" />
         <input type="submit" />
       </Form>
-      {pending ? (
-        <p id="status">{`submitting ${pending.data.get('name')}`}</p>
-      ) : null}
+
+      {isLoading ? <p id="status">{`submitting ${values.name}`}</p> : null}
     </>
   );
 }

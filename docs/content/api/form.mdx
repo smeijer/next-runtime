@@ -53,11 +53,19 @@ function MyPage() {
   the page or invoke a redirect. `response` the json payload returned from the
   `post` handler.
 
-- **onError** _(error: string) => void_
+- **onError** _(error: { code: string | number, message: string, { [key:
+  string]: unknown }) => void_
 
   A callback that's invoked when the form errors on the server side. Can be used
-  to show an error message. `error` is a string containing statusCode &
-  statusText
+  to show an error message.
+
+  If the error originates from the server, code will default to
+  `response.status`, and message to `response.statusText`. The error object gets
+  merged with the json returned from the server. So the defaults can be
+  overwritten.
+
+  If the error originates from the client, code will be `Error.name`, and
+  message the `Error.message`.
 
 - **shallow** _boolean_
 

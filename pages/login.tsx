@@ -1,5 +1,5 @@
 import { handle, json, redirect } from '../src';
-import { Form, usePendingFormSubmit } from '../src/form';
+import { Form, useFormSubmit } from '../src/form';
 import { streamToBuffer } from '../src/utils';
 
 type PageProps = any;

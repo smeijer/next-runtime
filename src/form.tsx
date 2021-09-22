@@ -3,95 +3,95 @@ import {
   FormEventHandler,
   FormHTMLAttributes,
   forwardRef,
-  ReactNode,
+  useCallback,
   useEffect,
-  useReducer,
-  useRef,
+  useMemo,
 } from 'react';
+import create from 'zustand';
 
-import {
-  HttpMethod,
-  httpMethodsWithBody,
-  HttpMethodWithBody,
-} from './http-methods';
-import { useRefs } from './utils/useRefs';
-import { useSafeState } from './utils/useSafeState';
+import { HttpMethod } from './http-methods';
+import { FetchError } from './lib/fetch-error';
+import { useRefs } from './lib/use-refs';
+import { setField } from './runtime/set-field';
+
+const UNNAMED_FORM = Symbol('unnamed-form');
 
 type Store = {
-  pending: number;
-  lastState: { state: 'pending'; data: FormData } | null;
-  listeners: Set<() => void>;
-  startSubmission: (state: { state: 'pending'; data: FormData }) => {
-    done: () => void;
-  };
-  signal: () => void;
-  subscribe: (fn: () => void) => () => void;
+  states: Record<string | symbol, FormState>;
+
+  set(
+    name: string | symbol,
+    state: { status: FormStatus } & Partial<FormState>,
+  ): void;
+  get(name: string | symbol): FormState;
 };
 
-const store: Store = {
-  pending: 0,
-  lastState: null,
-  listeners: new Set<() => void>(),
+const DEFAULT_STATE: FormState = { status: 'idle' };
 
-  // I know that submission data will get mixed up when submitting multiple
-  // forms at once. At this moment, I'd say this just isn't meant for that
-  // kind of usage.
-  startSubmission(state) {
-    this.pending++;
-    this.lastState = state;
-    let stopped = false;
-    this.signal();
+const useStore = create<Store>((set, get) => ({
+  states: {},
 
-    return {
-      done: () => {
-        if (stopped) return;
-        stopped = true;
-
-        this.pending--;
-        this.signal();
-      },
-    };
+  set(name, state) {
+    const states = get().states;
+    const slice = { ...(states[name] || DEFAULT_STATE), ...state } as FormState;
+    set({ states: { ...states, [name]: slice } });
   },
 
-  signal() {
-    for (const listener of this.listeners) {
-      listener();
-    }
+  get(name) {
+    return get().states[name] || DEFAULT_STATE;
   },
+}));
 
-  subscribe(listener) {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
-  },
+export type FormSubmission = FormState & {
+  isIdle: boolean;
+  isSubmitting: boolean;
+  isRouting: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
 };
 
-export function usePendingFormSubmit() {
-  const [, forceUpdate] = useReducer((c) => c + 1, 0);
-  useEffect(() => store.subscribe(forceUpdate), [forceUpdate]);
-  return store.pending ? store.lastState : null;
+export function useFormSubmit(name?: string): FormSubmission {
+  const state = useStore(
+    useCallback(
+      (store) => store.get(name || UNNAMED_FORM),
+      [name, UNNAMED_FORM],
+    ),
+  );
+
+  return useMemo(
+    () => ({
+      ...state,
+      isIdle: state.status === 'idle',
+      isSubmitting: state.status === 'submitting',
+      isRouting: state.status === 'routing',
+      isLoading: state.status === 'submitting' || state.status === 'routing',
+      isSuccess: state.status === 'success',
+      isError: state.status === 'error',
+    }),
+    [state],
+  );
 }
 
 type FetchDataOptions = {
-  method: HttpMethod | Uppercase<HttpMethod>;
+  method: string;
   url: string;
   data: FormData;
 };
 
 async function fetchData({
   method: methodArg,
-  url,
+  url: urlArg,
   data,
 }: FetchDataOptions): Promise<Response> {
-  const method = methodArg.toLowerCase() as Lowercase<HttpMethod>;
+  // patch must be in all caps: https://github.com/github/fetch/issues/254
+  const method = methodArg.toUpperCase();
+  const url = new URL(urlArg);
 
-  if (method === 'get') {
-    const _url = new URL(url);
-
+  if (method === 'GET') {
     for (const [field, value] of data.entries()) {
       if (typeof value === 'string') {
-        _url.searchParams.set(field, value);
+        url.searchParams.set(field, value);
       } else {
         throw new Error('Cannot submit binary form data using GET');
       }
@@ -99,22 +99,17 @@ async function fetchData({
 
     history.replaceState(null, null, url);
 
-    return fetch(_url.toString(), {
-      method: 'get',
+    return fetch(url.toString(), {
+      method,
       headers: { accept: 'application/json' },
     });
   }
 
-  if (httpMethodsWithBody.includes(method as HttpMethodWithBody)) {
-    return fetch(url, {
-      // patch must be in all caps: https://github.com/github/fetch/issues/254
-      method: method.toUpperCase(),
-      headers: { accept: 'application/json' },
-      body: data,
-    });
-  }
-
-  throw Error('unsupported form method');
+  return fetch(url.toString(), {
+    method,
+    headers: { accept: 'application/json' },
+    body: data,
+  });
 }
 
 export type FormProps = {
@@ -132,30 +127,46 @@ export type FormProps = {
    * @param formData the data that was entered in the form
    */
   onSubmit?: FormEventHandler<HTMLFormElement>;
-  /**
-   * A callback that's invoked upon successful submission. Can be used to update
-   * the page or invoke a redirect.
-   *
-   * @param response the props that were returned from getServerSideProps
-   */
-  onSuccess?: (response: Record<string, unknown>) => void;
-  /**
-   * A callback that's invoked when the form errors on the server side. Can be
-   * used to show an error message.
-   *
-   * @param error a string holding the statusCode & statusText that were returned
-   */
-  onError?: (error: string) => void;
-  /**
-   * Submit the form without updating the current page. The form will still be reset, but the
-   * `get` handler is not rerun. Defaults to `false`.
-   */
-  shallow?: boolean;
-  /**
-   * The fields & content of the form. Make something pretty :-)
-   */
-  children: ReactNode;
-} & FormHTMLAttributes<HTMLFormElement>;
+} & Omit<FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'method'>;
+
+type FormStatus = 'idle' | 'submitting' | 'routing' | 'success' | 'error';
+type FormState =
+  | {
+      status: 'idle';
+      formData?: FormData;
+      values?: undefined;
+      data?: Record<string, unknown> | null;
+      error?: FetchError | Error;
+    }
+  | {
+      status: 'submitting';
+      formData: FormData;
+      values: Record<string, unknown>;
+      data?: Record<string, unknown> | null;
+      error?: FetchError | Error;
+    }
+  | {
+      status: 'routing';
+      data: Record<string, unknown> | null;
+      redirect: { from: string; to: string };
+      formData: FormData;
+      values: Record<string, unknown>;
+      error?: FetchError | Error;
+    }
+  | {
+      status: 'success';
+      data: Record<string, unknown> | null;
+      formData: FormData;
+      values: Record<string, unknown>;
+      error?: FetchError | Error;
+    }
+  | {
+      status: 'error';
+      data?: Record<string, unknown> | null;
+      formData: FormData;
+      values: Record<string, unknown>;
+      error: FetchError | Error;
+    };
 
 /**
  * Replace your `form` with `Form` to submit it clientside using `fetch`, and get
@@ -163,88 +174,67 @@ export type FormProps = {
  * looking loading status.
  */
 export const Form = forwardRef(function Form(
-  {
-    method = 'post',
-    onSuccess,
-    onError,
-    onSubmit,
-    shallow = false,
-    ...props
-  }: FormProps,
+  { method = 'post', onSubmit, ...props }: FormProps,
   forwardRef,
 ) {
-  type FormState =
-    | { state: 'idle'; error?: string; data?: unknown }
-    | { state: 'pending'; data: FetchDataOptions }
-    | { state: 'success'; data: Record<string, unknown>; redirect?: string }
-    | { state: 'error'; data?: unknown; error: string };
-
-  const [state, setState] = useSafeState<FormState>({ state: 'idle' });
-
   const router = useRouter();
   const ref = useRefs<HTMLFormElement>(forwardRef);
 
-  const handlers = useRef({ onSuccess, onError });
-  handlers.current.onError = onError;
-  handlers.current.onSuccess = onSuccess;
-
-  useEffect(() => {
-    if (shallow || state.state !== 'success') return;
-
-    if (state.redirect) {
-      return void router.push(state.redirect, undefined, { scroll: true });
-    }
-
-    void router.replace(router.asPath, undefined, { scroll: false });
-  }, [state.state, shallow]);
+  const name = props.name || UNNAMED_FORM;
+  const set = useStore(useCallback((store) => store.set, []));
+  const state = useStore(useCallback((store) => store.get(name), [name]));
 
   useEffect(() => {
     async function transition() {
-      switch (state.state) {
-        case 'pending': {
-          const submission = store.startSubmission({
-            state: state.state,
-            data: state.data.data,
-          });
-
+      switch (state.status) {
+        case 'submitting': {
           try {
-            const response = await fetchData(state.data);
+            const response = await fetchData({
+              url:
+                ref.current.getAttribute('action') ||
+                location.href.split('?')[0],
+              method: ref.current.getAttribute('method') || 'POST',
+              data: state.formData,
+            });
 
-            if (response.ok) {
-              setState({
-                ...state,
-                state: 'success',
+            if (response.redirected) {
+              set(name, {
+                status: 'routing',
                 data: await response.json(),
-                redirect: response.redirected ? response.url : undefined,
+                redirect: { from: location.href, to: response.url },
+                error: undefined,
+              });
+            } else if (response.ok) {
+              set(name, {
+                status: 'success',
+                data: await response.json(),
+                error: undefined,
               });
             } else {
-              setState({
-                ...state,
-                state: 'error',
-                data: await response.json(),
-                error: `[${response.status}]: ${response.statusText}`,
+              set(name, {
+                status: 'error',
+                error: await FetchError.create(response),
               });
             }
-          } catch (e) {
-            setState({ ...state, state: 'error', error: e.message });
-          } finally {
-            submission.done();
+          } catch (error) {
+            set(name, {
+              status: 'error',
+              error: error as Error,
+            });
           }
 
           break;
         }
 
-        case 'error': {
-          setTimeout(() => {
-            setState({ ...state, state: 'idle' });
-          }, 2000);
-
-          handlers.current.onError?.(state.error);
+        case 'routing': {
+          await router.push(state.redirect.to, undefined, { scroll: true });
+          set(name, {
+            status: 'success',
+          });
           break;
         }
 
         case 'success': {
-          handlers.current.onSuccess?.(state.data);
           ref.current.reset();
           break;
         }
@@ -252,22 +242,29 @@ export const Form = forwardRef(function Form(
     }
 
     void transition();
-  }, [state]);
+  }, [state.status]);
 
   const handleSubmit = async (event) => {
+    if (state.status === 'submitting' || state.status === 'routing') {
+      event.preventDefault();
+      return;
+    }
+
     onSubmit?.(event);
     if (event.defaultPrevented) return;
+
     event.preventDefault();
-    const form = event.currentTarget;
 
-    if (state.state === 'pending') return;
+    const formData = new FormData(event.currentTarget);
+    const values = {};
+    for (const [name, value] of formData.entries()) {
+      setField(values, name, value);
+    }
 
-    const data = new FormData(form);
-    const url = props.action ?? form.action;
-
-    setState({
-      state: 'pending',
-      data: { data, url, method },
+    set(name, {
+      status: 'submitting',
+      formData,
+      values,
     });
   };
 
