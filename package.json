@@ -14,7 +14,8 @@
     "test:e2e": "cross-env type=e2e jest --runInBand ./pages",
     "version": "npm run build",
     "postversion": "cp -r docs README.md package.json lib",
-    "release": "np --contents=./lib --message='release: cut the `%s` release' --no-yarn --no-2fa"
+    "release": "np --contents=./lib --message='release: cut the `%s` release' --no-yarn --no-2fa",
+    "typecheck": "tsc --noEmit"
   },
   "main": "./index.js",
   "source": "./src/index.ts",

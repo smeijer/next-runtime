@@ -14,7 +14,7 @@ export const getServerSideProps = handle({
     await setTimeout(1000);
     toggle = !toggle;
     console.log('POST', toggle);
-    return redirect<never>(context.req.url!, 303);
+    return redirect(context.req.url!, 303);
   },
 });
 

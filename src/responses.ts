@@ -14,11 +14,15 @@ export type ResponseInit = Pick<
 >;
 export type ResponseType = 'not-found' | 'redirect' | 'json';
 
-function createResponse<T>(
-  body: { [key: string]: any },
-  init: ResponseInit,
-  type: ResponseType,
-): TypedResponse<T> {
+function createResponse<T>({
+  body = {} as T,
+  init,
+  type,
+}: {
+  body?: T;
+  init: ResponseInit;
+  type: ResponseType;
+}): TypedResponse<T> {
   const response = new Response(JSON.stringify(body), init) as TypedResponse<T>;
   response.headers.set('x-next-runtime-type', type);
   return response;
@@ -27,9 +31,9 @@ function createResponse<T>(
 /**
  * Send the user a 404
  */
-export function notFound<TProps>(
+export function notFound(
   init: number | ResponseInit = 404,
-): TypedResponse<TProps> {
+): TypedResponse<never> {
   let responseInit: ResponseInit;
 
   if (typeof init === 'number') {
@@ -38,16 +42,16 @@ export function notFound<TProps>(
     responseInit = { status: 404, ...init };
   }
 
-  return createResponse({}, responseInit, 'not-found');
+  return createResponse<never>({ init: responseInit, type: 'not-found' });
 }
 
 /**
  * Redirect the user to another page. Defaults to temporary redirect.
  */
-export function redirect<TProps>(
+export function redirect(
   destination: string,
   init: number | ResponseInit | { permanent: boolean } = 302,
-): RuntimeResponse<TProps> {
+): RuntimeResponse<never> {
   let responseInit: ResponseInit;
 
   if (typeof init === 'number') {
@@ -61,7 +65,10 @@ export function redirect<TProps>(
   const headers = new Headers(responseInit.headers);
   headers.set('Location', destination);
 
-  return createResponse({}, { ...responseInit, headers }, 'redirect');
+  return createResponse<never>({
+    init: { ...responseInit, headers },
+    type: 'redirect',
+  });
 }
 
 /**
@@ -84,5 +91,9 @@ export function json<TProps>(
     headers.set('Content-Type', 'application/json; charset=utf-8');
   }
 
-  return createResponse(props, { ...responseInit, headers }, 'json');
+  return createResponse({
+    body: props,
+    init: { ...responseInit, headers },
+    type: 'json',
+  });
 }
