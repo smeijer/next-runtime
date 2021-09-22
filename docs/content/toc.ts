@@ -19,6 +19,7 @@ const toc: TocEntry[] = [
 
   { caption: 'Client API' },
   { title: 'Form', slug: 'api/form' },
+  { title: 'useFormSubmit', slug: 'api/use-form-submit' },
 ];
 
 export default toc;

@@ -65,10 +65,10 @@ But sometimes, we want more. Faster responses, or prevent the page from
 reloading. In such cases, you'll use `Form`.
 
 ```jsx
-import { Form, usePendingFormSubmit } from 'next-runtime/form';
+import { Form, useFormSubmit } from 'next-runtime/form';
 
 export default function MyPage({ name, message }) {
-  const pending = usePendingFormSubmit();
+  const { isSubmitting } = useFormSubmit();
 
   if (message) {
     return <p>{message}</p>;
@@ -79,7 +79,7 @@ export default function MyPage({ name, message }) {
       <input name="name" defaultValue={name} />
       <input name="message" />
       <button type="submit" disabled={pending}>
-        {pending ? 'submitting' : 'submit'}
+        {isSubmitting ? 'submitting' : 'submit'}
       </button>
     </Form>
   );

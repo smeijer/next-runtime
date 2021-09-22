@@ -31,6 +31,11 @@ const config: Configuration = {
       '& ul > li > p:first-child > strong:first-child + em:nth-child(2)': {
         marginLeft: '.5em',
       },
+      '& ul > li > code:first-child + em:nth-child(2)': {
+        fontSize: '.875em',
+        marginLeft: '.25em',
+        marginRight: '.5em',
+      },
     },
   },
   theme: {

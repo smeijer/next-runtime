@@ -1,0 +1,106 @@
+---
+title: useFormSubmit
+---
+
+A hook that provides access to the state and data of Forms on the page. This
+hook is a companion for [`Form`](/api/form) and allows you to create fancy
+loading screens.
+
+```jsx
+import { useFormSubmit } from 'next-runtime/form';
+
+function MyPage() {
+  const form = useFormSubmit('create-user');
+
+  if (form.isLoading) {
+    return <p>{`Currently submitting ${form.values.name}`}</p>;
+  }
+
+  return (
+    <Form method="post">
+      <input name="name" />
+      <button type="submit">submit</button>
+    </Form>
+  );
+}
+```
+
+## Options
+
+`useFormSubmit` takes the following options:
+
+- **name** _string_
+
+  The name of the form to connect to. As form names are optional, so is this
+  option. That being said, we strongly recommend you to provide a name, as
+  unnamed forms might cause issues in later stages of your project.
+
+## Returns
+
+`useFormSubmit` returns an object holding the following properties:
+
+- **status** _string_
+
+  The status of this form. It will be one of the following options, and defaults
+  to `idle`.
+
+  - `idle`: if the form is at rest and hasn't yet been submitted.
+  - `submitting`: the form is submitted, and waiting for response from the
+    server. Form values are available under `values` and `formData`.
+  - `routing`: the server returned a `redirect`, we're now rerouting the client.
+  - `error`: the submission resulted in an error. Error details are stored under
+    `error`.
+  - `success`: the submission has been completed, and we got a response code in
+    the 200 range, or have been redirected. Response data is stored under
+    `data`.
+
+- **data**: _Record<string, unknown>_
+
+  The response data returned in case of a successful submission.
+
+- **error** _FetchError | Error_
+
+  In case of client side errors, this holds the standard `Error` type, with a
+  name and message. In case of server-side errors, a `FetchError` is available.
+  A `FetchError` extends the default `Error` class with the following
+  properties:
+
+  - `message` _string_- the error status code and message formatted as
+    `[status]: message`
+  - `status` _number_- the response status code
+  - `statusText` _string_- the response status text
+  - `headers` _Headers_- the response headers
+  - `data` _Record<string, unknown>_- the response data
+
+- **formData** _FormData_
+
+  The form values that the user is submitting, provided as `FormData`.
+
+- **values** _Record<string, unknown>_
+
+  The form values that the user is submitting, provided in
+  [expanded form](/api/handle-requests#query-expansion).
+
+- **isIdle** _Boolean_
+
+  A boolean status prop derived as `status === 'idle'`
+
+- **isSubmitting** _Boolean_
+
+  A boolean status prop derived as `status === 'submitting'`
+
+- **isRouting** _Boolean_
+
+  A boolean status prop derived as `status === 'routing'`
+
+- **isLoading** _Boolean_
+
+  A boolean status prop derived as `status === 'loading' || status === 'routing`
+
+- **isSuccess** _Boolean_
+
+  A boolean status prop derived as `status === 'success`
+
+- **isError** _Boolean_
+
+  A boolean status prop derived as `status === 'error'`

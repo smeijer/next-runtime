@@ -98,6 +98,9 @@ function H({ tag, children }) {
   );
 }
 
+function Note({ children }) {
+  return <p className="bg-blue">{children}</p>;
+}
 // Custom components/renderers to pass to MDX.
 // Since the MDX files aren't loaded by webpack, they have no knowledge of how
 // to handle import statements. Instead, you must include components in scope
@@ -111,6 +114,12 @@ const components = {
   h5: ({ children }) => <H tag="h5">{children}</H>,
   ul: ({ children }) => <ul className="list-disc list-outside">{children}</ul>,
   code: WrapCode,
+  note: ({ children }) => (
+    <p className="bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
+      <strong>note: </strong>
+      {children}
+    </p>
+  ),
   Head,
 };
 

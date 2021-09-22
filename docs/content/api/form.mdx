@@ -7,10 +7,9 @@ posts the form data to the current page path, so it's meant to be use in
 conjunction with `handle` to process post data in `getServerSideProps`.
 
 It does not do any client side state management. It's as much as an alternative
-to full fletched form libs, as it is not.
-
-The philosophy of `next-runtime` is to do more on the server, and less on the
-client. Simpler form handling is part of that.
+to full fletched form libs, as it is not. The philosophy of `next-runtime` is to
+do more on the server, and less on the client. Simpler form handling is part of
+that.
 
 When using `Form`, we recommend to use `defaultValue` to set initial values, and
 to not use `value` or `onChange` handlers. Read
@@ -35,58 +34,27 @@ function MyPage() {
 
 `Form` takes the following props. All props are optional.
 
-- **method** _get | post_
+- **name** _string_
+
+  The name is a standard html prop, but in addition to that it's also used to
+  tie forms and [`useFormSubmit`](/api/use-form-submit) together. Usage is
+  optional, but recommended.
+
+- **method** _get | post | put | patch | delete_
 
   The method to use for form submissions. `get` appends the form-data to the URL
-  in name/value pairs, while `post` sends the form-data as an HTTP post
-  transaction. Defaults to `post`
+  in name/value pairs, while other http methods include the FormData in the
+  request body.
+
+  Unlike the standard html form, method defaults to `post`, and all http methods
+  are supported.
 
 - **onSubmit** _(event: FormEvent) => void_
 
   A callback that's invoked before form submission. It receives the raw `event`
   as argument from React. This function can be used for validation. Call
-  `event.preventDefault` to block our handler from being fired.
+  `event.preventDefault` to block the form from being submitted to the server.
 
-- **onSuccess** _(response: Record<string, unknown>) => void_
-
-  A callback that's invoked upon successful submission. Can be used to update
-  the page or invoke a redirect. `response` the json payload returned from the
-  `post` handler.
-
-- **onError** _(error: { code: string | number, message: string, { [key:
-  string]: unknown }) => void_
-
-  A callback that's invoked when the form errors on the server side. Can be used
-  to show an error message.
-
-  If the error originates from the server, code will default to
-  `response.status`, and message to `response.statusText`. The error object gets
-  merged with the json returned from the server. So the defaults can be
-  overwritten.
-
-  If the error originates from the client, code will be `Error.name`, and
-  message the `Error.message`.
-
-- **shallow** _boolean_
-
-  Submit the form without updating the current page. The form will still be
-  reset, but the `get` handler is not rerun. Defaults to `false`.
-
-## usePendingFormSubmit
-
-A hook that provides access to the data that is currently being submitted. This
-allows you to create fancy loading screens.
-
-```jsx
-import { usePendingFormSubmit } from 'next-runtime/form';
-
-function MyPage() {
-  const pending = usePendingFormSubmit();
-
-  if (pending) {
-    return <p>{`Currently submitting ${pending.data.get('name')}`}</p>;
-  }
-
-  // ...
-}
-```
+As you might have noticed, there are no success or error handlers on this Form.
+Use the [`useFormSubmit`](/api/use-form-submit) hook to respond to those events
+(and more).
