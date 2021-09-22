@@ -20,7 +20,7 @@ export const getServerSideProps = handle<PageProps>({
   },
 
   async post({ req: { body } }) {
-    await sleep(50); // fake work
+    await sleep(5000); // fake work
 
     if (body.name === 'error') {
       return json({ message: 'error from server' }, 422);
@@ -36,6 +36,7 @@ export default function FormComponent(props: PageProps) {
     useFormSubmit('form1'),
     useFormSubmit('form2'),
     useFormSubmit('form3'),
+    useFormSubmit(),
   ];
 
   return (
@@ -47,15 +48,18 @@ export default function FormComponent(props: PageProps) {
         padding: 16,
       }}
     >
-      {Array.from({ length: forms.length }).map((_, idx) => (
+      {Array.from({ length: forms.length + 3 }).map((_, idx) => (
         <div key={idx} style={{ background: '#eee', padding: 8 }}>
           <p>Form {idx}</p>
-          <Form name={`form${idx}`} method="post">
+          <Form
+            name={idx < forms.length - 1 ? `form${idx}` : undefined}
+            method="post"
+          >
             <input name="name" type="text" />
             <input name="file" type="file" />
             <input type="submit" />
           </Form>
-          <p>status: {forms[idx].status}</p>
+          <p>status: {forms[Math.min(idx, forms.length - 1)].status}</p>
         </div>
       ))}
     </div>
