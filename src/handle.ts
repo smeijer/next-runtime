@@ -134,9 +134,23 @@ export function handle<
       bindCookieJar(context);
       bindTypedHeaders(context);
 
-      const response = handlers[method]
-        ? ((await handlers[method](context)) as TypedResponse<P>)
-        : notFound(404);
+      let response: Response;
+
+      if (typeof handlers[method] === 'function') {
+        try {
+          response = (await handlers[method](context)) as TypedResponse<P>;
+        } catch (e) {
+          // If an Response is thrown, (throw json(...)), we'll handle those as response
+          // objects. This allows the user to break out api handlers in nested functions
+          if (e instanceof Response) {
+            response = e;
+          } else {
+            throw e;
+          }
+        }
+      } else {
+        response = notFound();
+      }
 
       const propResult = applyResponse(response, res);
 
