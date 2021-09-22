@@ -14,6 +14,7 @@ const toc: TocEntry[] = [
   { caption: 'Server API' },
   { title: 'Handle Requests', slug: 'api/handle-requests' },
   { title: 'Response Helpers', slug: 'api/response-helpers' },
+  { title: 'Response Throwing', slug: 'api/response-throwing' },
   { title: 'Cookies', slug: 'api/cookies' },
   { title: 'Headers', slug: 'api/headers' },
 

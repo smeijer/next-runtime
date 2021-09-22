@@ -1,0 +1,78 @@
+---
+title: Response Throwing
+---
+
+Responses can be returned, but they can also be thrown. This enables us to break
+out of the response pipeline, without creating a _pyramid of death_ or tons of
+_if not, return_ statements.
+
+## Example
+
+Imagine a `/me` route. A `get` handler that checks if the user is authenticated,
+and returns the user object if that's the case.
+
+Something like:
+
+```js
+export const getServerSideProps = handle({
+  async get({ req }) {
+    if (!req.user) {
+      return redirect('/login');
+    }
+
+    return json({ user: req.user });
+  },
+});
+```
+
+That works, but for more complex handlers, the if statements might become
+tedious. Besides, the logic isn't easily reusable across various api handlers.
+Response throwing enables us to reuse checks, while flattening the flow.
+
+First, we'll extract the assertion to a reusable helper:
+
+```js
+import { redirect } from 'next-runtime';
+
+function assertIsAuthenticated(request) {
+  if (!user.request) {
+    throw redirect('/login', 303);
+  }
+}
+```
+
+And now we can use that assertion function across our api handlers:
+
+```ts
+export const getServerSideProps = handle({
+  async get({ req }) {
+    assertIsAuthenticated(req);
+    return json({ user: req.user });
+  },
+});
+```
+
+Because our assertion throws, instead of returns, we don't need another check.
+If the user is not logged in, a redirect response is being sent to the client.
+If there is a `req.user` object, the assertion will pass and the json result is
+returned.
+
+## Typescript
+
+We can decorate the assertion with
+[typescript assertions](https://dev.to/smeijer/typescript-type-assertions-4klf)
+to get the most benefit out of it. Using assertions like below, `req.user` is
+`undefined` before the assertion, while it's `User` after
+`assertIsAuthenticated`.
+
+```ts
+import { redirect } from 'next-runtime';
+
+function assertIsAuthenticated<T>(
+  request: T,
+): asserts request is T & { user: User } {
+  if (!('user' in request)) {
+    throw redirect('/login', 303);
+  }
+}
+```
