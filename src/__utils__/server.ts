@@ -52,7 +52,7 @@ async function request(
 }
 
 export async function next(getServerSideProps: GetServerSideProps) {
-  let lastRequest;
+  let lastRequest: number;
 
   const server = http.createServer((req, res) => {
     lastRequest = Date.now();

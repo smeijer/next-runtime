@@ -1,10 +1,9 @@
 import { handle, json } from '../src';
 import { Form, useFormSubmit } from '../src/form';
 import { streamToBuffer } from '../src/utils';
+import { sleep } from './utils';
 
 type PageProps = any;
-const sleep = (duration) =>
-  new Promise((resolve) => setTimeout(resolve, duration));
 
 export const getServerSideProps = handle<PageProps>({
   async upload({ file, stream }) {

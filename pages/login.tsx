@@ -1,10 +1,8 @@
 import { handle, json, redirect } from '../src';
-import { Form, useFormSubmit } from '../src/form';
+import { Form } from '../src/form';
 import { streamToBuffer } from '../src/utils';
 
 type PageProps = any;
-const sleep = (duration) =>
-  new Promise((resolve) => setTimeout(resolve, duration));
 
 export const getServerSideProps = handle<PageProps>({
   async upload({ file, stream }) {
@@ -15,7 +13,7 @@ export const getServerSideProps = handle<PageProps>({
     return json(query);
   },
 
-  async post({ req: { body } }) {
+  async post() {
     return redirect('/form-component');
   },
 });

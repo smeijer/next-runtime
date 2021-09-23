@@ -1,8 +1,4 @@
-export async function clear(page, selector) {
-  await page.evaluate((selector) => {
-    document.querySelector(selector).value = '';
-  }, selector);
-}
+import { clear } from './utils';
 
 test('can submit html form', async () => {
   await page.goto('http://localhost:4000/html-form');

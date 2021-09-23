@@ -1,18 +1,13 @@
-export async function clear(page, selector) {
-  await page.evaluate((selector) => {
-    document.querySelector(selector).value = '';
-  }, selector);
-}
-
-const sleep = (duration) =>
-  new Promise((resolve) => setTimeout(resolve, duration));
-
 // we don't do this any more, find a way to test this using withNextRuntime
+import { clear, sleep } from './utils';
+
 test.skip('form component re-renders page on submit', async () => {
   await page.goto('http://localhost:4000/form-component');
 
   await expect(page).toHaveSelector('form');
-  const firstRequestTime = await page.$('#time').then((x) => x.innerText());
+  const firstRequestTime =
+    (await page.$('#time').then((x) => x?.innerText())) ||
+    "FIRST TIME DIDN'T RENDER";
 
   await clear(page, 'input[name="name"]');
   await page.type('input[name="name"]', 'person');

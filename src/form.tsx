@@ -3,6 +3,8 @@ import {
   FormEventHandler,
   FormHTMLAttributes,
   forwardRef,
+  ReactChildren,
+  ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -97,7 +99,7 @@ async function fetchData({
       }
     }
 
-    history.replaceState(null, null, url);
+    history.replaceState(null, '', url);
 
     return fetch(url.toString(), {
       method,
@@ -173,8 +175,8 @@ type FormState =
  * access to the serialized form data in `usePendingSubmit()` to build a great
  * looking loading status.
  */
-export const Form = forwardRef(function Form(
-  { method = 'post', onSubmit, ...props }: FormProps,
+export const Form = forwardRef<HTMLFormElement, FormProps>(function Form(
+  { method = 'post', onSubmit, ...props },
   forwardRef,
 ) {
   const router = useRouter();
@@ -186,6 +188,8 @@ export const Form = forwardRef(function Form(
 
   useEffect(() => {
     async function transition() {
+      if (!ref.current) return;
+
       switch (state.status) {
         case 'submitting': {
           try {
@@ -244,7 +248,7 @@ export const Form = forwardRef(function Form(
     void transition();
   }, [state.status]);
 
-  const handleSubmit = async (event) => {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     if (state.status === 'submitting' || state.status === 'routing') {
       event.preventDefault();
       return;

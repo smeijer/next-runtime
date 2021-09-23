@@ -3,7 +3,7 @@ import { Form, useFormSubmit } from '../src/form';
 import { streamToBuffer } from '../src/utils';
 
 type PageProps = any;
-const sleep = (duration) =>
+const sleep = (duration: number) =>
   new Promise((resolve) => setTimeout(resolve, duration));
 
 export const getServerSideProps = handle<PageProps>({
@@ -31,7 +31,7 @@ export const getServerSideProps = handle<PageProps>({
 });
 
 export default function FormComponent(props: PageProps) {
-  const { status, values, error, isLoading } = useFormSubmit();
+  const { values, error, isLoading } = useFormSubmit();
 
   if ('file' in props) {
     return <pre>{props.file.contents}</pre>;
@@ -50,7 +50,7 @@ export default function FormComponent(props: PageProps) {
         <input type="submit" />
       </Form>
 
-      {isLoading ? <p id="status">{`submitting ${values.name}`}</p> : null}
+      {isLoading ? <p id="status">{`submitting ${values?.name}`}</p> : null}
     </>
   );
 }

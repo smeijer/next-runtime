@@ -15,7 +15,7 @@ export class FetchError extends Error {
   static async create(response: Response): Promise<FetchError> {
     const data = response.headers
       .get('content-type')
-      .startsWith('application/json')
+      ?.startsWith('application/json')
       ? await response.json()
       : undefined;
 

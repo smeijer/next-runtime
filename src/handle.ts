@@ -2,7 +2,11 @@ import accepts from 'accepts';
 import { ServerResponse } from 'http';
 import { Response } from 'node-fetch';
 
-import { httpMethodsWithBody, HttpMethodWithBody } from './http-methods';
+import {
+  HttpMethod,
+  httpMethodsWithBody,
+  HttpMethodWithBody,
+} from './http-methods';
 import { log } from './lib/log';
 import { notFound, TypedResponse } from './responses';
 import { bodyparser, BodyParserOptions } from './runtime/body-parser';
@@ -17,7 +21,9 @@ import {
 import { ParsedUrlQuery } from './types/querystring';
 
 export type RuntimeContext<Q extends ParsedUrlQuery> =
-  GetServerSidePropsContext<Q> & CookieJar & TypedHeaders;
+  GetServerSidePropsContext<Q> &
+    CookieJar &
+    TypedHeaders & { req: { method: Uppercase<HttpMethod> } };
 
 export type RuntimeResponse<P extends { [key: string]: any }> = MaybePromise<
   GetServerSidePropsResult<P> | TypedResponse<P>
@@ -89,7 +95,7 @@ function applyResponse<T>(
     case 'redirect': {
       return {
         redirect: {
-          destination: response.headers.get('Location'),
+          destination: response.headers.get('Location') as string,
           permanent: response.status === 301,
         },
       };
@@ -101,6 +107,8 @@ function applyResponse<T>(
       };
     }
   }
+
+  return { notFound: true };
 }
 
 /**
@@ -110,74 +118,89 @@ function applyResponse<T>(
  */
 const VOID_NEXT_RESPONSE = { props: { dummy: '' } } as any;
 
+function assertRequestBody<T>(
+  context: GetServerSidePropsContext,
+): asserts context is GetServerSidePropsContext & { req: { body: T } } {
+  // intentionally left blank, we don't care much about it
+}
+
+function assertRequestMethod<T>(
+  context: GetServerSidePropsContext,
+): asserts context is GetServerSidePropsContext & {
+  req: { method: Uppercase<HttpMethod> };
+} {
+  context.req.method = context.req.method?.toUpperCase() || 'GET';
+}
+
+type Accept = 'html' | 'json' | false;
+
 export function handle<
   P extends { [key: string]: any },
   Q extends ParsedUrlQuery = ParsedUrlQuery,
   F extends Record<string, unknown> = Record<string, unknown>,
 >(handlers: Handlers<P, Q, F>): GetServerSideProps<P, Q> {
   return async (context) => {
-    const { req, res } = context;
-    const accept: 'html' | 'json' | false = accepts(req).type(['html', 'json']);
-    const method = req.method.toLowerCase();
+    const accept = accepts(context.req).type(['html', 'json']) as Accept;
+    const method = (context.req.method?.toLowerCase() || 'get') as HttpMethod;
 
     // also handle complex objects in query params
     context.query = expandQueryParams(context.query);
 
+    // extend the context
+    bindCookieJar(context);
+    bindTypedHeaders(context);
+    assertRequestBody<F>(context);
+    assertRequestMethod(context);
+
     if (httpMethodsWithBody.includes(method as HttpMethodWithBody)) {
-      await bodyparser<F>(req, {
+      await bodyparser<F>(context.req, context.res, {
         limits: handlers.limits,
         onFile: handlers.upload,
         uploadDir: handlers.uploadDir,
       });
     }
 
-    async function handle(): Promise<GetServerSidePropsResult<P>> {
-      bindCookieJar(context);
-      bindTypedHeaders(context);
+    let response: Response;
+    const handler = handlers[method];
 
-      let response: Response;
-
-      if (typeof handlers[method] === 'function') {
-        try {
-          response = (await handlers[method](context)) as TypedResponse<P>;
-        } catch (e) {
-          // If an Response is thrown, (throw json(...)), we'll handle those as response
-          // objects. This allows the user to break out api handlers in nested functions
-          if (e instanceof Response) {
-            response = e;
-          } else {
-            throw e;
-          }
-        }
-      } else {
-        response = notFound();
-      }
-
-      const propResult = applyResponse(response, res, accept);
-
-      if ('redirect' in propResult) {
-        res.end();
-        return VOID_NEXT_RESPONSE;
-      }
-
-      // Note, we can't make this api first. That will break shallow rerender
-      switch (accept) {
-        case 'html': {
-          return propResult as any;
-        }
-        case 'json': {
-          res.end(
-            JSON.stringify('props' in propResult ? propResult.props : {}),
-          );
-          return VOID_NEXT_RESPONSE;
-        }
-        default: {
-          log.info('unsupported mime type requested');
-          return VOID_NEXT_RESPONSE;
+    if (typeof handler === 'function') {
+      try {
+        response = (await handler(context)) as TypedResponse<P>;
+      } catch (e) {
+        // If an Response is thrown, (throw json(...)), we'll handle those as response
+        // objects. This allows the user to break out api handlers in nested functions
+        if (e instanceof Response) {
+          response = e;
+        } else {
+          throw e;
         }
       }
+    } else {
+      response = notFound();
     }
 
-    return handle();
+    const propResult = applyResponse(response, context.res, accept);
+
+    if ('redirect' in propResult) {
+      context.res.end();
+      return VOID_NEXT_RESPONSE;
+    }
+
+    // Note, we can't make this api first. That will break shallow rerender
+    switch (accept) {
+      case 'html': {
+        return propResult as any;
+      }
+      case 'json': {
+        context.res.end(
+          JSON.stringify('props' in propResult ? propResult.props : {}),
+        );
+        return VOID_NEXT_RESPONSE;
+      }
+      default: {
+        log.info('unsupported mime type requested');
+        return VOID_NEXT_RESPONSE;
+      }
+    }
   };
 }

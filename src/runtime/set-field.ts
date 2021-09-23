@@ -1,7 +1,7 @@
 export function setField<T extends Record<string, unknown>>(
   data: any,
-  name,
-  value,
+  name: string,
+  value: unknown,
 ): T {
   // a[b][c] becomes [ a, b, c ]
   const path = name.replace(/\[([^\]]+)?]/g, '.$1').split('.');

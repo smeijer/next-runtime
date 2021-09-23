@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import Busboy from 'busboy';
 import bytes from 'bytes';
 import fs from 'fs';
+import { IncomingMessage, ServerResponse } from 'http';
 import os from 'os';
 import path from 'path';
 import picoid from 'picoid';
@@ -74,27 +75,31 @@ const ACCEPT: ContentType[] = [
 ];
 
 export async function bodyparser<TData extends Record<string, unknown>>(
-  req,
+  req: IncomingMessage & { body: TData },
+  res: ServerResponse,
   options?: BodyParserOptions,
-): Promise<TData> {
-  const uploadDir = options.uploadDir || os.tmpdir();
-  const limits = options.limits || {};
+): Promise<TData | null> {
+  const uploadDir = options?.uploadDir || os.tmpdir();
+  const limits = options?.limits || {};
+  const errors: { name: string; message: string }[] = [];
 
   // convert string based sizes to numbers
   const maxFileCount = limits.fileCount || undefined;
-  const maxFileSize: number = bytes.parse(limits.fileSize) || undefined;
-  const maxFieldSize: number = bytes.parse(limits.fieldSize) || undefined;
-  const maxJsonSize: number = bytes.parse(limits.jsonSize) || undefined;
+  const maxFileSize: number | undefined =
+    bytes.parse(limits.fileSize || '') || undefined;
+  const maxFieldSize: number | undefined =
+    bytes.parse(limits.fieldSize || '') || undefined;
+  const maxJsonSize: number | undefined =
+    bytes.parse(limits.jsonSize || '') || undefined;
 
-  if (!req.headers['content-type']) return;
-  if (!ACCEPT.some((type) => req.headers['content-type'].startsWith(type))) {
-    return;
+  if (!req.headers['content-type']) return null;
+  if (!ACCEPT.some((type) => req.headers['content-type']?.startsWith(type))) {
+    return null;
   }
 
   // application/json is handled by bodyParser, as busboy doesn't support it
   if (req.headers['content-type'].startsWith('application/json')) {
-    const errors = [];
-    let lastKey;
+    let lastKey: string;
 
     const jsonParser = bodyParser.json({
       limit: maxJsonSize,
@@ -115,11 +120,11 @@ export async function bodyparser<TData extends Record<string, unknown>>(
     });
 
     return new Promise((resolve, reject) =>
-      jsonParser(req, null, (error) => {
+      jsonParser(req, res, (error) => {
         if (error?.type === 'entity.too.large') {
           errors.push({
             name: 'JSON_SIZE_EXCEEDED',
-            message: `json object exceeds ${bytes(maxJsonSize)}`,
+            message: `json object exceeds ${bytes(maxJsonSize || 0)}`,
           });
         }
 
@@ -144,10 +149,9 @@ export async function bodyparser<TData extends Record<string, unknown>>(
     });
 
     const data = {};
-    const errors = [];
 
     // We don't want to have these heavy ops when the developer didn't think of it.
-    if (maxFileCount || options.uploadDir || options.onFile) {
+    if (maxFileCount || options?.uploadDir || options?.onFile) {
       busboy.on('file', async (field, file, name, encoding, type) => {
         const value: File = { name, type, size: 0 };
 
@@ -162,7 +166,7 @@ export async function bodyparser<TData extends Record<string, unknown>>(
           return file.resume();
         }
 
-        if (options.onFile) {
+        if (options?.onFile) {
           options.onFile({ field, file: value, stream: file });
         } else {
           // write to disk when the user doesn't provide an onFile handler
@@ -182,7 +186,9 @@ export async function bodyparser<TData extends Record<string, unknown>>(
           if ((file as any).truncated) {
             return errors.push({
               name: 'FILE_SIZE_EXCEEDED',
-              message: `file "${value.name}" exceeds ${bytes(maxFileSize)}`,
+              message: `file "${value.name}" exceeds ${bytes(
+                maxFileSize || 0,
+              )}`,
             });
           }
 
@@ -195,7 +201,7 @@ export async function bodyparser<TData extends Record<string, unknown>>(
       if (truncated) {
         return errors.push({
           name: 'FIELD_SIZE_EXCEEDED',
-          message: `field "${field}" exceeds ${bytes(maxFieldSize)}`,
+          message: `field "${field}" exceeds ${bytes(maxFieldSize || 0)}`,
         });
       }
 
@@ -214,7 +220,7 @@ export async function bodyparser<TData extends Record<string, unknown>>(
         return reject({ errors });
       }
 
-      req.body = data;
+      req.body = data as TData;
 
       // push it to a next frame, so that onFile promises complete first
       setTimeout(() => {

@@ -14,6 +14,8 @@ export type TypedHeaders = {
   };
 };
 
-export function bindTypedHeaders({ req }: GetServerSidePropsContext) {
-  (req as any).getHeader = (name) => req.headers[name];
+export function bindTypedHeaders(
+  context: GetServerSidePropsContext,
+): asserts context is GetServerSidePropsContext & TypedHeaders {
+  (context.req as any).getHeader = (name: string) => context.req.headers[name];
 }
