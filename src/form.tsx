@@ -88,7 +88,7 @@ async function fetchData({
 }: FetchDataOptions): Promise<Response> {
   // patch must be in all caps: https://github.com/github/fetch/issues/254
   const method = methodArg.toUpperCase();
-  const url = new URL(urlArg);
+  const url = new URL(urlArg, window.location.href);
 
   if (method === 'GET') {
     for (const [field, value] of data.entries()) {
