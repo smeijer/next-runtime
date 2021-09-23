@@ -56,6 +56,7 @@ type Handlers<
 function applyResponse<T>(
   response: TypedResponse<T> | GetServerSidePropsResult<T>,
   target: ServerResponse,
+  accept: 'html' | 'json' | false,
 ): GetServerSidePropsResult<T> {
   if (!(response instanceof Response)) {
     return response;
@@ -69,7 +70,7 @@ function applyResponse<T>(
     target.setHeader(key, value);
   }
 
-  switch (accepts(target.req).type(['html', 'json'])) {
+  switch (accept) {
     case 'html': {
       target.setHeader('Content-Type', 'text/html; charset=utf-8');
       break;
@@ -116,7 +117,7 @@ export function handle<
 >(handlers: Handlers<P, Q, F>): GetServerSideProps<P, Q> {
   return async (context) => {
     const { req, res } = context;
-
+    const accept: 'html' | 'json' | false = accepts(req).type(['html', 'json']);
     const method = req.method.toLowerCase();
 
     // also handle complex objects in query params
@@ -152,7 +153,7 @@ export function handle<
         response = notFound();
       }
 
-      const propResult = applyResponse(response, res);
+      const propResult = applyResponse(response, res, accept);
 
       if ('redirect' in propResult) {
         res.end();
@@ -160,7 +161,7 @@ export function handle<
       }
 
       // Note, we can't make this api first. That will break shallow rerender
-      switch (accepts(req).type(['html', 'json'])) {
+      switch (accept) {
         case 'html': {
           return propResult as any;
         }
