@@ -20,3 +20,4 @@ yarn-error.log*
 # other package managers
 /yarn.lock
 /pnpm-lock.yaml
+.vscode
