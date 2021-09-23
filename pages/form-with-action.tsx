@@ -14,7 +14,7 @@ export const getServerSideProps = handle<PageProps>({
 });
 
 export default function FormWithAction() {
-  const { data, error } = useFormSubmit();
+  const { data, error } = useFormSubmit<PageProps>();
 
   return (
     <>

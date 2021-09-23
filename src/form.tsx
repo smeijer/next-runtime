@@ -44,19 +44,22 @@ const useStore = create<Store>((set, get) => ({
   },
 }));
 
-export type FormSubmission = FormState & {
-  isIdle: boolean;
-  isSubmitting: boolean;
-  isRouting: boolean;
-  isLoading: boolean;
-  isSuccess: boolean;
-  isError: boolean;
-};
+export type FormSubmission<Data extends Record<string, unknown>> =
+  FormState<Data> & {
+    isIdle: boolean;
+    isSubmitting: boolean;
+    isRouting: boolean;
+    isLoading: boolean;
+    isSuccess: boolean;
+    isError: boolean;
+  };
 
-export function useFormSubmit(name?: string): FormSubmission {
+export function useFormSubmit<Data extends Record<string, unknown>>(
+  name?: string,
+): FormSubmission<Data> {
   const state = useStore(
     useCallback(
-      (store) => store.get(name || UNNAMED_FORM),
+      (store) => store.get(name || UNNAMED_FORM) as FormState<Data>,
       [name, UNNAMED_FORM],
     ),
   );
@@ -131,44 +134,46 @@ export type FormProps = {
   onSubmit?: FormEventHandler<HTMLFormElement>;
 } & Omit<FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'method'>;
 
-type FormStatus = 'idle' | 'submitting' | 'routing' | 'success' | 'error';
-type FormState =
-  | {
-      status: 'idle';
-      formData?: FormData;
-      values?: undefined;
-      data?: Record<string, unknown> | null;
-      error?: FetchError | Error;
-    }
-  | {
-      status: 'submitting';
-      formData: FormData;
-      values: Record<string, unknown>;
-      data?: Record<string, unknown> | null;
-      error?: FetchError | Error;
-    }
-  | {
-      status: 'routing';
-      data: Record<string, unknown> | null;
-      redirect: { from: string; to: string };
-      formData: FormData;
-      values: Record<string, unknown>;
-      error?: FetchError | Error;
-    }
-  | {
-      status: 'success';
-      data: Record<string, unknown> | null;
-      formData: FormData;
-      values: Record<string, unknown>;
-      error?: FetchError | Error;
-    }
-  | {
-      status: 'error';
-      data?: Record<string, unknown> | null;
-      formData: FormData;
-      values: Record<string, unknown>;
-      error: FetchError | Error;
-    };
+type FormStatus = FormState['status'];
+
+type FormState<Data extends Record<string, unknown> = Record<string, unknown>> =
+
+    | {
+        status: 'idle';
+        formData?: FormData;
+        values?: undefined;
+        data?: Data | null;
+        error?: FetchError | Error;
+      }
+    | {
+        status: 'submitting';
+        formData: FormData;
+        values: Record<string, unknown>;
+        data?: Data | null;
+        error?: FetchError | Error;
+      }
+    | {
+        status: 'routing';
+        data: Data | null;
+        redirect: { from: string; to: string };
+        formData: FormData;
+        values: Record<string, unknown>;
+        error?: FetchError | Error;
+      }
+    | {
+        status: 'success';
+        data: Data | null;
+        formData: FormData;
+        values: Record<string, unknown>;
+        error?: FetchError | Error;
+      }
+    | {
+        status: 'error';
+        data?: Data | null;
+        formData: FormData;
+        values: Record<string, unknown>;
+        error: FetchError | Error;
+      };
 
 /**
  * Replace your `form` with `Form` to submit it clientside using `fetch`, and get
