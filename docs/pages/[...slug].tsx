@@ -234,9 +234,9 @@ function Sidebar({ selected }) {
 
       <button
         onClick={() => setMenuOpen((open) => !open)}
-        className="z-50 md:hidden bg-gray-800 hover:bg-gray-900 text-white fixed w-12 h-12 shadow-lg rounded-full bottom-6 right-6 flex items-center justify-center focus:outline-none"
+        className="z-50 md:hidden bg-gray-800 hover:bg-gray-900 text-white fixed w-16 h-16 shadow-lg rounded-full bottom-6 right-6 flex items-center justify-center focus:outline-none"
       >
-        <HamburgerMenuIcon />
+        <HamburgerMenuIcon width="20" height="20" />
       </button>
     </div>
   );
