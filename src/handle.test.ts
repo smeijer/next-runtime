@@ -322,3 +322,42 @@ test('handles file size limit', async () => {
     ],
   });
 });
+
+test('applies middleware', async () => {
+  const calls: string[] = [];
+
+  const fetch = await next(
+    handle({
+      use: [
+        () => {
+          calls.push('one');
+          return json({ layout: 'props' });
+        },
+        async (context, next) => {
+          calls.push('two');
+          await next();
+          calls.push('four');
+        },
+        async (context) => {
+          context.res.setHeader('x-with-middleware', 'true');
+        },
+      ],
+
+      async get() {
+        calls.push('three');
+        return json({ page: 'content' });
+      },
+    }),
+  );
+
+  const response = await fetch('/', {
+    method: 'GET',
+  });
+
+  expect(response.headers.get('x-with-middleware')).toEqual('true');
+  expect(response.body).toEqual({
+    layout: 'props',
+    page: 'content',
+  });
+  expect(calls).toEqual(['one', 'two', 'three', 'four']);
+});
