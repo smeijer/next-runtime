@@ -22,7 +22,7 @@
   "license": "MIT",
   "__exports": {
     ".": "./lib/index.js",
-    "./form": "./lib/form.js",
+    "./form": "./lib/form/index.js",
     "./handle": "./lib/handlcookies.e.js",
     "./responses": "./lib/responses.js",
     "./utils": "./lib/utils/index.js"
@@ -46,7 +46,7 @@
     "debug": "^2.6.9",
     "node-fetch": "^2.6.2",
     "picoid": "^1.1.3",
-    "zustand": "^3.5.10"
+    "rxjs": "^7"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.14.1",
