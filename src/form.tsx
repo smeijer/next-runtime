@@ -3,16 +3,16 @@ import {
   FormEventHandler,
   FormHTMLAttributes,
   forwardRef,
-  ReactChildren,
-  ReactNode,
   useCallback,
   useEffect,
   useMemo,
+  useRef,
 } from 'react';
 import create from 'zustand';
 
 import { HttpMethod } from './http-methods';
 import { FetchError } from './lib/fetch-error';
+import { useLatestRef } from './lib/use-latest-ref';
 import { useRefs } from './lib/use-refs';
 import { setField } from './runtime/set-field';
 
@@ -60,7 +60,7 @@ export function useFormSubmit<Data extends Record<string, unknown>>(
   const state = useStore(
     useCallback(
       (store) => store.get(name || UNNAMED_FORM) as FormState<Data>,
-      [name, UNNAMED_FORM],
+      [name],
     ),
   );
 
@@ -132,7 +132,22 @@ export type FormProps = {
    * @param formData the data that was entered in the form
    */
   onSubmit?: FormEventHandler<HTMLFormElement>;
-} & Omit<FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'method'>;
+
+  /**
+   * Called when the form is successfully submitted.
+   * @param state The resulting form state
+   */
+  onSuccess?: (state: FormState) => void;
+
+  /**
+   * Called if an error occured during form submission.
+   * @param state The resulting form state
+   */
+  onError?: (state: FormState) => void;
+} & Omit<
+  FormHTMLAttributes<HTMLFormElement>,
+  'onSubmit' | 'onError' | 'method'
+>;
 
 type FormStatus = FormState['status'];
 
@@ -181,15 +196,48 @@ type FormState<Data extends Record<string, unknown> = Record<string, unknown>> =
  * looking loading status.
  */
 export const Form = forwardRef<HTMLFormElement, FormProps>(function Form(
-  { method = 'post', onSubmit, ...props },
+  { method = 'post', onSubmit, onSuccess, onError, ...props },
   forwardRef,
 ) {
   const router = useRouter();
   const ref = useRefs<HTMLFormElement>(forwardRef);
 
   const name = props.name || UNNAMED_FORM;
+
   const set = useStore(useCallback((store) => store.set, []));
   const state = useStore(useCallback((store) => store.get(name), [name]));
+
+  // the effects need to check if this is reset to idle
+  // before calling success/error callbacks
+  const initializedRef = useRef(false);
+
+  const onSuccessRef = useLatestRef(onSuccess);
+  useEffect(() => {
+    if (!initializedRef.current) return;
+    if (state.status === 'success') {
+      onSuccessRef.current?.(state);
+    }
+  }, [onSuccessRef, state]);
+
+  const onErrorRef = useLatestRef(onError);
+  useEffect(() => {
+    if (!initializedRef.current) return;
+    if (state.status === 'error') {
+      onErrorRef.current?.(state);
+    }
+  }, [onErrorRef, state]);
+
+  useEffect(() => {
+    // reset form state when we mount
+    set(name, {
+      status: 'idle',
+      data: undefined,
+      error: undefined,
+      formData: undefined,
+      values: undefined,
+    });
+    initializedRef.current = true;
+  }, [name, set]);
 
   useEffect(() => {
     async function transition() {
