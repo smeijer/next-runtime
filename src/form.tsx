@@ -207,8 +207,8 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(function Form(
   const set = useStore(useCallback((store) => store.set, []));
   const state = useStore(useCallback((store) => store.get(name), [name]));
 
-  // the effects need to check if this is reset to idle
-  // before calling success/error callbacks
+  // this ref is needed to ensure success/error callbacks
+  // aren't called immediately on mount
   const initializedRef = useRef(false);
 
   const onSuccessRef = useLatestRef(onSuccess);
@@ -228,14 +228,6 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(function Form(
   }, [onErrorRef, state]);
 
   useEffect(() => {
-    // reset form state when we mount
-    set(name, {
-      status: 'idle',
-      data: undefined,
-      error: undefined,
-      formData: undefined,
-      values: undefined,
-    });
     initializedRef.current = true;
   }, [name, set]);
 

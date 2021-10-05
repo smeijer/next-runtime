@@ -17,8 +17,6 @@ test('form callbacks', async () => {
   await assertResult('error');
 
   await page.click('#show-form');
-
-  await assertResult('idle');
 });
 
 async function assertResult(result: string) {
