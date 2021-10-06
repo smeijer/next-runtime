@@ -2,8 +2,31 @@
 title: Cookies
 ---
 
-We extend the request and response objects with cookie handlers using
-[`cookies`](https://www.npmjs.com/package/cookies).
+We've added the [`cookies`](https://npmjs.com/cookies) instance to the
+`GetServerSidePropsContext`, and also extended the request and response objects
+with cookie handlers. Which one to choose depends on your personal style
+preference. They offer the same functionality.
+
+## context.cookies
+
+The simplest way to use cookies, is probably via the `context.cookies`
+namespace.
+
+```js
+export const getServerSideProps = handle({
+  async get({ cookies }) {
+    const session = cookies.get('session');
+    cookies.set('session', Date.now(), { expires: 300 });
+  },
+});
+```
+
+See
+[pillarjs/cookies](https://github.com/pillarjs/cookies/tree/d2111627e8ff2e29f90e75d1f1cc4164c5a07a3f#api)
+for more options.
+
+Alternatively, you might want to use the `getCookie` and `setCookie` helpers on
+the request and response properties.
 
 ## req.getCookie
 
