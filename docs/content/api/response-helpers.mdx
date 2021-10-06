@@ -160,14 +160,20 @@ export const getServerSideProps = handle({
 
 ## Common mistakes
 
-These response helpers return an
+These response helpers return an extended object based on the
 [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response)
 object. Thereby, they won't function with standard `getServerSideProps`
-functions. If you're getting a serialization error like below, then you're
-probably using these out of the context of `next-runtime/handle`.
+functions. If you're getting a serialization error, or additional keys error,
+like below, then you're probably using these out of the context of
+`next-runtime/handle`.
 
 ```bash
 Server Error
 Error: Error serializing props returned from `getServerSideProps` in "...".
 Reason: Props must be returned as a plain object from getServerSideProps: `{ props: { ... } }` (received: `[object Undefined]`).
+```
+
+```bash
+Server Error
+Error: Additional keys were returned from `getServerSideProps`. Properties intended for your component must be nested under the `props` key, e.g.:
 ```

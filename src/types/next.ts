@@ -25,10 +25,14 @@ export type GetServerSidePropsContext<
   query: ParsedUrlQuery;
 };
 
-export type GetServerSidePropsResult<P> =
-  | { props: P }
-  | { redirect: Redirect }
-  | { notFound: true };
+export type PropResult<P extends Record<string, unknown>> = { props: P };
+export type NotFoundResult = { notFound: true };
+export type RedirectResult = { redirect: Redirect };
+
+export type GetServerSidePropsResult<P extends Record<string, unknown>> =
+  | PropResult<P>
+  | RedirectResult
+  | NotFoundResult;
 
 export type GetServerSideProps<
   P extends { [key: string]: any } = { [key: string]: any },

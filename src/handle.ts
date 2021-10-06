@@ -1,6 +1,5 @@
 import accepts from 'accepts';
 import { ServerResponse } from 'http';
-import { Response } from 'node-fetch';
 
 import {
   HttpMethod,
@@ -8,6 +7,8 @@ import {
   HttpMethodWithBody,
 } from './http-methods';
 import { log } from './lib/log';
+import { applyMiddlewares, MiddlewareFn } from './lib/middleware';
+import { getResponseType, isTypedResponse } from './lib/response-utils';
 import { notFound, TypedResponse } from './responses';
 import { bodyparser, BodyParserOptions } from './runtime/body-parser';
 import { bindCookieJar, CookieJar } from './runtime/cookies';
@@ -31,7 +32,7 @@ export type RuntimeResponse<P extends { [key: string]: any }> = MaybePromise<
 
 export type RequestBody<F> = { req: { body: F } };
 
-type MaybePromise<T> = Promise<T> | T;
+export type MaybePromise<T> = Promise<T> | T;
 
 type Handlers<
   P extends { [key: string]: any },
@@ -44,6 +45,8 @@ type Handlers<
   uploadDir?: BodyParserOptions['uploadDir'];
   // The upload handler, to pipe files to other places
   upload?: BodyParserOptions['onFile'];
+
+  use?: MiddlewareFn<Q>[];
 
   // The GET request handler, this is the default getServerSideProps
   get?: (context: RuntimeContext<Q>) => RuntimeResponse<P>;
@@ -59,56 +62,48 @@ type Handlers<
  * Transfer the properties from the Response object to the response to
  * the response stream, and return a next compatible object.
  */
-function applyResponse<T>(
+function applyResponse<T extends Record<string, unknown>>(
   response: TypedResponse<T> | GetServerSidePropsResult<T>,
   target: ServerResponse,
   accept: 'html' | 'json' | false,
 ): GetServerSidePropsResult<T> {
-  if (!(response instanceof Response)) {
+  if (!isTypedResponse(response)) {
     return response;
   }
 
-  target.statusCode = response.status;
-  target.statusMessage = response.statusText;
-
-  for (const [key, value] of response.headers) {
-    if (key === 'x-next-runtime-type') continue;
-    target.setHeader(key, value);
+  if (response.status) {
+    target.statusCode = response.status;
+  }
+  if (response.statusText) {
+    target.statusMessage = response.statusText;
   }
 
-  switch (accept) {
-    case 'html': {
-      target.setHeader('Content-Type', 'text/html; charset=utf-8');
-      break;
-    }
-    case 'json': {
-      target.setHeader('Content-Type', 'application/json; charset=utf-8');
-      break;
-    }
-  }
-
-  switch (response.headers.get('x-next-runtime-type')) {
-    case 'json': {
-      return { props: JSON.parse(response.body.toString()) };
+  if (response.headers) {
+    for (const key of Object.keys(response.headers)) {
+      target.setHeader(key, response.headers[key]);
     }
 
-    case 'redirect': {
-      return {
-        redirect: {
-          destination: response.headers.get('Location') as string,
-          permanent: response.status === 301,
-        },
-      };
-    }
-
-    case 'not-found': {
-      return {
-        notFound: true,
-      };
+    switch (accept) {
+      case 'html': {
+        target.setHeader('Content-Type', 'text/html; charset=utf-8');
+        break;
+      }
+      case 'json': {
+        target.setHeader('Content-Type', 'application/json; charset=utf-8');
+        break;
+      }
     }
   }
 
-  return { notFound: true };
+  if ('notFound' in response.body) {
+    return { notFound: response.body.notFound };
+  }
+
+  if ('redirect' in response.body) {
+    return { redirect: response.body.redirect };
+  }
+
+  return { props: response.body.props || ({} as T) };
 }
 
 /**
@@ -124,7 +119,7 @@ function assertRequestBody<T>(
   // intentionally left blank, we don't care much about it
 }
 
-function assertRequestMethod<T>(
+function assertRequestMethod(
   context: GetServerSidePropsContext,
 ): asserts context is GetServerSidePropsContext & {
   req: { method: Uppercase<HttpMethod> };
@@ -139,6 +134,13 @@ export function handle<
   Q extends ParsedUrlQuery = ParsedUrlQuery,
   F extends Record<string, unknown> = Record<string, unknown>,
 >(handlers: Handlers<P, Q, F>): GetServerSideProps<P, Q> {
+  // wrap handlers with middlewares here, so we only do that during build time
+  handlers.get = applyMiddlewares(handlers.use, handlers.get);
+  handlers.post = applyMiddlewares(handlers.use, handlers.post);
+  handlers.put = applyMiddlewares(handlers.use, handlers.put);
+  handlers.delete = applyMiddlewares(handlers.use, handlers.delete);
+  handlers.patch = applyMiddlewares(handlers.use, handlers.patch);
+
   return async (context) => {
     const accept = accepts(context.req).type(['html', 'json']) as Accept;
     const method = (context.req.method?.toLowerCase() || 'get') as HttpMethod;
@@ -160,16 +162,16 @@ export function handle<
       });
     }
 
-    let response: Response;
+    let response: TypedResponse<any>;
     const handler = handlers[method];
 
     if (typeof handler === 'function') {
       try {
         response = (await handler(context)) as TypedResponse<P>;
-      } catch (e) {
+      } catch (e: any) {
         // If an Response is thrown, (throw json(...)), we'll handle those as response
         // objects. This allows the user to break out api handlers in nested functions
-        if (e instanceof Response) {
+        if (getResponseType(e) !== 'unknown') {
           response = e;
         } else {
           throw e;

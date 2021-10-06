@@ -1,0 +1,151 @@
+---
+title: Middleware
+---
+
+next-runtime has supports for middlewares. Middlewares are applied using the
+onion model, which allows you to wrap the request handlers. When returning
+response objects from the middlewares, the results will be merged with the
+return value from the request handler. Allowing you to extract utils that for
+example return props for shared layout components.
+
+## use
+
+This is where your middlewares go, add as many functions as you like.
+
+```js
+import { handle, json } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  use: [
+    ({ req }) => {
+      return json({ layout: 'props ' });
+    },
+  ],
+
+  async get() {
+    return json({ page: 'content' });
+  },
+});
+```
+
+**Arguments**
+
+Middlewares get two arguments, `context` and `next`.
+
+- **context** _RuntimeContext_
+
+  The `context` parameter is the object as provided by Next.js
+  [`GetServerSidePropsContext`](https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering)
+  extended with [cookie](/api/cookies) and [header](/api/headers) handlers.
+
+- **next** _() => void_
+
+  A callback which is optional, but must be called when defined. It's used to
+  signal next-runtime when the next middleware should be run.
+
+**Returns**
+
+Middlewares should either return nothing, or one of the response helpers.
+
+- [**notFound**](/api/response-helpers#notfound)
+
+  A notFound response has the highest priority and is final. Because 404s are
+  often used to hide content for unauthorized access, there is no way around
+  this.
+
+  Do note that the remaining stack is still executed. If that's not what you
+  want, the `notFound` [should be thrown](/api/response-throwing) instead.
+
+- [**redirect**](/api/response-helpers#redirect)
+
+  The redirect has the second-highest priority. The first redirect that's being
+  returned, is the one that will be sent as response.
+
+  Do note that the remaining stack is still executed. If that's not what you
+  want, the `notFound` [should be thrown](/api/response-throwing) instead.
+
+- [**json**](/api/response-helpers#json)
+
+  Json responses have a special behavior when returned from middlewares. They're
+  being merged! Meaning, all data and all headers that you'll return, will be
+  brought together on the response.
+
+  The json body is merged shallow, we don't do deep merging. Json responses can
+  be thrown as well, but they probably make the most sense as layout helpers. To
+  return partial data sets for the page, which are the same across various
+  pages.
+
+## Recipes
+
+### Cors
+
+It's no problem to use express middleware like the `cors` package. All you need
+to do, is map the next-style signature to an express-style signature.
+
+```js
+import { handle, json } from 'next-runtime';
+import Cors from 'cors';
+
+const cors = Cors({ methods: ['GET', 'HEAD'] });
+
+export const getServerSideProps = handle({
+  use: [(context, next) => cors(context.req, context.res, next)],
+
+  async get() {
+    return json({});
+  },
+});
+```
+
+### Request times
+
+Handlers can be wrapped using the `next` callback, for example to add error
+handling logic, or to time requests/response times.
+
+Whenever a user hits the route as defined below, a special `x-request-time`
+header is added to the response, telling you how long the request took.
+
+```ts
+import { handle, json } from 'next-runtime';
+
+const responseTime: MiddlewareFn = async ({ res }, next) => {
+  const start = performance.now();
+  await next();
+  const duration = performance.now() - start;
+  res.setHeader('x-request-time', `${duration.toFixed(2)} ms`);
+};
+
+export const getServerSideProps = handle({
+  use: [responseTime],
+
+  async get() {
+    return json();
+  },
+});
+```
+
+### Shared / common props
+
+Sometimes you have this repeating set of props, that are the same for every
+page. How awesome would it be if _that_ could be abstracted away trough
+middlewares?!
+
+Simply use the json response helper to return data from your middleware. Json
+responses will be merged, so the page below would receive
+`{ propOne: 1, propTwo: 2 }`.
+
+```ts
+import { handle, json } from 'next-runtime';
+
+export const getServerSideProps = handle({
+  use: [
+    () => {
+      return json({ propOne: 1 });
+    },
+  ],
+
+  async get() {
+    return json({ propTwo: 2 });
+  },
+});
+```

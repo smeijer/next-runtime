@@ -1,32 +1,21 @@
-import {
-  Headers,
-  Response,
-  ResponseInit as FullResponseInit,
-} from 'node-fetch';
-
 import { RuntimeResponse } from './handle';
+import { mergeHeaders } from './lib/response-utils';
+import {
+  GetServerSidePropsResult,
+  NotFoundResult,
+  PropResult,
+  RedirectResult,
+} from './types/next';
 
-export type TypedResponse<T extends { [key: string]: any }> = Response;
+export type ResponseInit = {
+  status?: number;
+  statusText?: string;
+  headers?: Record<string, string>;
+};
 
-export type ResponseInit = Pick<
-  FullResponseInit,
-  'status' | 'statusText' | 'headers'
->;
-export type ResponseType = 'not-found' | 'redirect' | 'json';
-
-function createResponse<T>({
-  body = {} as T,
-  init,
-  type,
-}: {
-  body?: T;
-  init: ResponseInit;
-  type: ResponseType;
-}): TypedResponse<T> {
-  const response = new Response(JSON.stringify(body), init) as TypedResponse<T>;
-  response.headers.set('x-next-runtime-type', type);
-  return response;
-}
+export type TypedResponse<P extends { [key: string]: any }> = {
+  body: GetServerSidePropsResult<P>;
+} & ResponseInit;
 
 /**
  * Send the user a 404
@@ -34,15 +23,13 @@ function createResponse<T>({
 export function notFound(
   init: number | ResponseInit = 404,
 ): TypedResponse<never> {
-  let responseInit: ResponseInit;
+  const body: NotFoundResult = { notFound: true };
 
   if (typeof init === 'number') {
-    responseInit = { status: init };
-  } else {
-    responseInit = { status: 404, ...init };
+    return { status: init, body };
   }
 
-  return createResponse<never>({ init: responseInit, type: 'not-found' });
+  return { status: 404, ...init, body };
 }
 
 /**
@@ -51,7 +38,7 @@ export function notFound(
 export function redirect(
   destination: string,
   init: number | ResponseInit | { permanent: boolean } = 302,
-): RuntimeResponse<never> {
+): TypedResponse<never> {
   let responseInit: ResponseInit;
 
   if (typeof init === 'number') {
@@ -62,22 +49,27 @@ export function redirect(
     responseInit = { status: 302, ...init };
   }
 
-  const headers = new Headers(responseInit.headers);
-  headers.set('Location', destination);
+  const permanent = responseInit.status === 301 || responseInit.status === 308;
+  const body: RedirectResult = { redirect: { destination, permanent } };
 
-  return createResponse<never>({
-    init: { ...responseInit, headers },
-    type: 'redirect',
+  const headers = mergeHeaders(responseInit.headers, {
+    location: destination,
   });
+
+  return {
+    ...responseInit,
+    headers,
+    body,
+  };
 }
 
 /**
  * Return the props used to render the page, or as api response
  */
-export function json<TProps>(
+export function json<TProps extends Record<string, unknown>>(
   props: TProps,
   init: number | ResponseInit = {},
-): RuntimeResponse<TProps> {
+): TypedResponse<TProps> {
   let responseInit: ResponseInit;
 
   if (typeof init === 'number') {
@@ -86,14 +78,13 @@ export function json<TProps>(
     responseInit = { ...init };
   }
 
-  const headers = new Headers(responseInit.headers);
-  if (!headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json; charset=utf-8');
-  }
-
-  return createResponse({
-    body: props,
-    init: { ...responseInit, headers },
-    type: 'json',
+  const headers = mergeHeaders(responseInit.headers, {
+    'content-type': 'application/json; charset=utf-8',
   });
+
+  return {
+    ...responseInit,
+    headers,
+    body: { props },
+  };
 }
