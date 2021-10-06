@@ -3,6 +3,7 @@ module.exports = {
   plugins: ['eslint-plugin-simple-import-sort'],
   extends: [
     'plugin:@typescript-eslint/recommended',
+    'plugin:react-hooks/recommended',
     'prettier',
     'plugin:prettier/recommended',
   ],

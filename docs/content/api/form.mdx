@@ -52,9 +52,15 @@ function MyPage() {
 - **onSubmit** _(event: FormEvent) => void_
 
   A callback that's invoked before form submission. It receives the raw `event`
-  as argument from React. This function can be used for validation. Call
+  from React. This function can be used for validation. Call
   `event.preventDefault` to block the form from being submitted to the server.
 
-As you might have noticed, there are no success or error handlers on this Form.
-Use the [`useFormSubmit`](/api/use-form-submit) hook to respond to those events
-(and more).
+- **onSuccess** _(state: FormState) => void_
+
+  Called on successful form submission. It receives the form state as an
+  argument.
+
+- **onError** _(state: FormState) => void_
+
+  Called when an error occurs (non 2xx status). It receives the form state as an
+  argument.
