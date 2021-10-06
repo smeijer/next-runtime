@@ -24,7 +24,6 @@ In case you're not the documentation type of person, here's a quick example to g
 ```js
 import fs from 'fs';
 import { handle, json } from 'next-runtime';
-import { Form, useFormSubmit } from 'next-runtime/form';
 
 export const getServerSideProps = handle({
   async upload({ file, stream }) {
@@ -41,18 +40,16 @@ export const getServerSideProps = handle({
 });
 
 export default function Home({ name, message }) {
-  const { isSubmitting } = useFormSubmit();
-
   if (message) {
     return <p>{message}</p>;
   }
 
   return (
-    <Form method="post" encType="multipart/form-data">
+    <form method="post" encType="multipart/form-data">
       <input name="name" defaultValue={name} />
       <input type="file" name="file" />
-      <button type="submit">{isSubmitting ? 'submitting' : 'submit'}</button>
-    </Form>
+      <button type="submit">submit</button>
+    </form>
   );
 }
 ```
