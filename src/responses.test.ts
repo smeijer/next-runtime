@@ -120,3 +120,21 @@ test('can set response cookies', async () => {
     'session=two; path=/; httponly',
   );
 });
+
+test('can handle cookies via context', async () => {
+  const fetch = await next(
+    handle({
+      async get({ cookies }) {
+        return json({ cookie: String(Number(cookies.get('count')) + 2) });
+      },
+    }),
+  );
+
+  const response = await fetch('/', {
+    cookies: {
+      count: '2',
+    },
+  });
+
+  expect(response.body).toEqual({ cookie: '4' });
+});

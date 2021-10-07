@@ -6,8 +6,6 @@ import nodeFetch from 'node-fetch';
 import listen from 'test-listen';
 import { parse as parseUrl } from 'url';
 
-const fetcher = fetchCookie(nodeFetch);
-
 type RequestOptions = {
   method?: string;
   headers?: Record<string, string>;
@@ -24,15 +22,18 @@ async function request(
     body = undefined,
   }: RequestOptions = {},
 ) {
+  const cookie = Object.entries(cookies)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(';');
+
+  const fetcher = fetchCookie(nodeFetch);
   const response = await fetcher(url, {
     method,
     headers: {
       // default to json, as that works easiest in tests
       'content-type': 'application/json',
       accept: 'application/json',
-      cookie: Object.entries(cookies)
-        .map(([key, value]) => `${key}=${value}`)
-        .join('; '),
+      cookie,
       ...headers,
     },
     body:
