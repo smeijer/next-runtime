@@ -61,6 +61,9 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(function Form(
       formData: new FormData(event.currentTarget),
       formAction: props.action || location.href.split('?')[0],
       method,
+      // need to wrap the callbacks like this so the latest ref value is accessed
+      // at the time the callbacks are invoked,
+      // otherwise we could pass in a stale callback
       onError: () => onErrorRef.current?.(),
       onSuccess: () => onSuccessRef.current?.(),
     });
