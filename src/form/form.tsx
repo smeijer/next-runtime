@@ -3,9 +3,10 @@ import { FormEventHandler, FormHTMLAttributes, forwardRef } from 'react';
 
 import { HttpMethod } from '../http-methods';
 import { useLatestRef } from '../lib/use-latest-ref';
+import { FormStateWithHelpers } from './helpers';
 import { useFormStoreSubmit } from './store';
 
-export type FormProps = {
+export type FormProps<Data> = {
   /**
    *  The method to use for form submissions. `get` appends the form-data to the
    *  URL in name/value pairs, while others send the form-data as an HTTP post
@@ -23,26 +24,23 @@ export type FormProps = {
 
   /**
    * Called when the form is successfully submitted.
+   * @param state The resulting form state
    */
-  onSuccess?: () => void;
+  onSuccess?: (state: FormStateWithHelpers<Data>) => void;
 
   /**
    * Called if an error occured during form submission.
+   * @param state The resulting form state
    */
-  onError?: () => void;
+  onError?: (state: FormStateWithHelpers<Data>) => void;
 } & Omit<
   FormHTMLAttributes<HTMLFormElement>,
   'onSubmit' | 'onError' | 'method'
 >;
 
-/**
- * Replace your `form` with `Form` to submit it clientside using `fetch`, and get
- * access to the serialized form data in `usePendingSubmit()` to build a great
- * looking loading status.
- */
-export const Form = forwardRef<HTMLFormElement, FormProps>(function Form(
-  { method = 'post', onSubmit, onSuccess, onError, ...props },
-  ref,
+function FormComponent<Data>(
+  { method = 'post', onSubmit, onSuccess, onError, ...props }: FormProps<Data>,
+  ref: React.Ref<HTMLFormElement>,
 ) {
   const submit = useFormStoreSubmit();
   const router = useRouter();
@@ -61,13 +59,26 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(function Form(
       formData: new FormData(event.currentTarget),
       formAction: props.action || location.href.split('?')[0],
       method,
+
       // need to wrap the callbacks like this so the latest ref value is accessed
       // at the time the callbacks are invoked,
       // otherwise we could pass in a stale callback
-      onError: () => onErrorRef.current?.(),
-      onSuccess: () => onSuccessRef.current?.(),
+      onError: (state) => {
+        onErrorRef.current?.(state as FormStateWithHelpers<Data>);
+      },
+      onSuccess: (state) => {
+        onSuccessRef.current?.(state as FormStateWithHelpers<Data>);
+      },
     });
   };
 
   return <form {...props} ref={ref} method={method} onSubmit={handleSubmit} />;
-});
+}
+
+/**
+ * Replace your `form` with `Form` to submit it clientside using `fetch`, and get
+ * access to the serialized form data in `usePendingSubmit()` to build a great
+ * looking loading status.
+ */
+// the cast ensures we can use the generic on the form component
+export const Form = forwardRef(FormComponent) as typeof FormComponent;

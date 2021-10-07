@@ -4,6 +4,7 @@ import create from 'zustand';
 
 import { FetchError } from '../lib/fetch-error';
 import { setField } from '../runtime/set-field';
+import { FormStateWithHelpers, formStateWithHelpers } from './helpers';
 
 type FormName = string | symbol;
 
@@ -20,8 +21,8 @@ type FormSubmitOptions = {
   method: string;
   formData: FormData;
   formAction: string;
-  onSuccess: () => void;
-  onError: () => void;
+  onSuccess: (state: FormStateWithHelpers<unknown>) => void;
+  onError: (state: FormStateWithHelpers<unknown>) => void;
 };
 
 export type FormState<Data = Record<string, unknown>> =
@@ -123,40 +124,45 @@ const useFormStore = create<FormStore>((set, get) => ({
 
         await options.router.push(response.url, undefined, { scroll: true });
 
-        setForm(name, {
+        const newState: FormState = {
           ...baseState,
           status: 'success',
           data,
-        });
-        options.onSuccess();
+        };
+        setForm(name, newState);
+        options.onSuccess(formStateWithHelpers(newState));
         return;
       }
 
       if (response.ok) {
-        setForm(name, {
+        const newState: FormState = {
           ...baseState,
           status: 'success',
           data: await response.json(),
-        });
-        options.onSuccess();
+        };
+        setForm(name, newState);
+        options.onSuccess(formStateWithHelpers(newState));
         return;
       }
 
-      setForm(name, {
+      const newState: FormState = {
         ...baseState,
         status: 'error',
         data,
         error: await FetchError.create(response),
-      });
-      options.onError();
+      };
+      setForm(name, newState);
+      options.onError(formStateWithHelpers(newState));
       return;
     } catch (error) {
-      setForm(name, {
+      const newState: FormState = {
         ...baseState,
         status: 'error',
         error: error instanceof Error ? error : new Error(String(error)),
         data: getForm(name).data,
-      });
+      };
+      setForm(name, newState);
+      options.onError(formStateWithHelpers(newState));
     }
   },
 }));
