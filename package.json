@@ -22,7 +22,7 @@
   "license": "MIT",
   "__exports": {
     ".": "./lib/index.js",
-    "./form": "./lib/form.js",
+    "./form": "./lib/form/index.js",
     "./handle": "./lib/handlcookies.e.js",
     "./responses": "./lib/responses.js",
     "./utils": "./lib/utils/index.js"
