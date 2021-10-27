@@ -41,6 +41,15 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "umar-ahmed",
+      "name": "Umar Ahmed",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8302959?v=4",
+      "profile": "http://umarahmed.dev",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
