@@ -2,9 +2,11 @@ import { IncomingMessage, ServerResponse } from 'http';
 
 import { ParsedUrlQuery } from './querystring';
 
+export type RedirectStatusCode = 301 | 302 | 303 | 307 | 308;
+
 export type Redirect =
   | {
-      statusCode: 301 | 302 | 303 | 307 | 308;
+      statusCode: RedirectStatusCode;
       destination: string;
       basePath?: false;
     }
