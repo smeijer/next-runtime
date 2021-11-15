@@ -66,7 +66,8 @@ export async function next(getServerSideProps: GetServerSideProps) {
     } as any)
       .then((result) => {
         if (!res.writableEnded) {
-          res.end(JSON.stringify(result));
+          res.write(JSON.stringify(result));
+          res.end();
         }
       })
       // We only do this in the test server, so we can validate the handle function
@@ -74,7 +75,8 @@ export async function next(getServerSideProps: GetServerSideProps) {
       // response, instead of just throwing and leaving it up to the user to handle?
       .catch((e) => {
         res.statusCode = 500;
-        res.end(JSON.stringify(e));
+        res.write(JSON.stringify(e));
+        res.end();
       });
   });
 
