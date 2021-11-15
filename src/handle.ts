@@ -193,9 +193,11 @@ export function handle<
         return propResult as any;
       }
       case 'json': {
-        context.res.end(
+        // keep write and end separated for Next12 compatibility.
+        context.res.write(
           JSON.stringify('props' in propResult ? propResult.props : {}),
         );
+        context.res.end();
         return VOID_NEXT_RESPONSE;
       }
       default: {
