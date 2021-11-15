@@ -184,8 +184,7 @@ export function handle<
     const propResult = applyResponse(response, context.res, accept);
 
     if ('redirect' in propResult) {
-      context.res.end();
-      return VOID_NEXT_RESPONSE;
+      return propResult;
     }
 
     // Note, we can't make this api first. That will break shallow rerender

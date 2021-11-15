@@ -5,6 +5,7 @@ import {
   NotFoundResult,
   PropResult,
   RedirectResult,
+  RedirectStatusCode,
 } from './types/next';
 
 export type ResponseInit = {
@@ -49,8 +50,8 @@ export function redirect(
     responseInit = { status: 302, ...init };
   }
 
-  const permanent = responseInit.status === 301 || responseInit.status === 308;
-  const body: RedirectResult = { redirect: { destination, permanent } };
+  const statusCode = (responseInit.status || 302) as RedirectStatusCode;
+  const body: RedirectResult = { redirect: { destination, statusCode } };
 
   const headers = mergeHeaders(responseInit.headers, {
     location: destination,
