@@ -17,7 +17,8 @@
     "jsx": "preserve",
     "sourceMap": true,
     "declaration": true,
-    "noEmit": true
+    "noEmit": true,
+    "incremental": true
   },
   // TODO: utils is not published
   "include": ["next-env.d.ts", "jest.d.ts", "./src/**/*", "./pages/**/*"],
