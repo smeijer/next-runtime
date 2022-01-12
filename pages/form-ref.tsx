@@ -20,14 +20,14 @@ export default function FormRef() {
     <Form
       method="POST"
       ref={ref}
-      onSuccess={(state: FormStateWithHelpers<{ foo: number }>) => {
-        console.log(state);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      onSuccess={(_state: FormStateWithHelpers<{ foo: number }>) => {
         // reset the form after submission.
         ref.current?.reset();
       }}
       onError={(state) => {
         // verify that generics is working properly.
-        console.log(state.data?.foo);
+        state.data?.foo;
       }}
     >
       <input name="name" />
