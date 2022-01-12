@@ -81,4 +81,6 @@ function FormComponent<Data>(
  * looking loading status.
  */
 // the cast ensures we can use the generic on the form component
-export const Form = forwardRef(FormComponent) as typeof FormComponent;
+export const Form = forwardRef(FormComponent) as <Data>(
+  props: FormProps<Data> & { ref?: React.Ref<HTMLFormElement> },
+) => JSX.Element;
