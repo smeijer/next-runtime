@@ -4,7 +4,7 @@ import compose from 'koa-compose';
 import { MaybePromise, RuntimeContext } from '../handle';
 import { TypedResponse } from '../responses';
 import { ParsedUrlQuery } from '../types/querystring';
-import { mergeResponse } from './response-utils';
+import { getResponseType, mergeResponse } from './response-utils';
 
 type NextFn = () => void;
 
@@ -19,18 +19,35 @@ function normalizeMiddleware<T extends ParsedUrlQuery>(
   if (fn.length < 2) {
     // fn() => fn(context, next)
     // fn(context) => fn(context, next)
-    return async (ctx, next) => {
-      return mergeResponse(await fn(ctx, next), await next());
-    };
+    return async (ctx, next) =>
+      new Promise(async (resolve, reject) => {
+        try {
+          resolve(mergeResponse(await fn(ctx, next), await next()));
+        } catch (ex: any) {
+          if (getResponseType(ex) !== 'unknown') {
+            resolve(ex);
+          } else {
+            reject(ex);
+          }
+        }
+      });
   }
 
   if (fn.length === 2) {
     // fn(context, next) => fn(context, next)
     return async (ctx, next) =>
-      new Promise(async (resolve) => {
-        let nextResult;
-        const result = await fn(ctx, () => (nextResult = next()));
-        resolve(mergeResponse(result, await nextResult));
+      new Promise(async (resolve, reject) => {
+        try {
+          let nextResult;
+          const result = await fn(ctx, () => (nextResult = next()));
+          resolve(mergeResponse(result, await nextResult));
+        } catch (ex: any) {
+          if (getResponseType(ex) !== 'unknown') {
+            resolve(ex);
+          } else {
+            reject(ex);
+          }
+        }
       });
   }
 

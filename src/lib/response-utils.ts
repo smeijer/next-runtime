@@ -11,26 +11,6 @@ export function mergeResponse(
   left?: RuntimeResponse<any> | void,
   right?: RuntimeResponse<any> | void,
 ): TypedResponse<any> {
-  const leftType = getResponseType(left as any);
-  const rightType = getResponseType(right as any);
-
-  // right over left, so left should already have been applied before
-  if (leftType === 'not-found') {
-    throw left;
-  }
-
-  if (rightType === 'not-found') {
-    throw right;
-  }
-
-  if (leftType === 'redirect') {
-    throw left;
-  }
-
-  if (rightType === 'redirect') {
-    throw right;
-  }
-
   const l = left as any;
   const r = right as any;
 
@@ -40,6 +20,8 @@ export function mergeResponse(
     statusText: r?.statusText || l?.statusText,
     headers: mergeHeaders(l?.headers, r?.headers),
     body: {
+      ...(l?.body || l),
+      ...(r?.body || r),
       props: {
         ...(l?.body || l)?.props,
         ...(r?.body || r)?.props,
