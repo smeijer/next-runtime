@@ -50,6 +50,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "anneau",
+      "name": "HIKARU KOBORI",
+      "avatar_url": "https://avatars.githubusercontent.com/u/15067920?v=4",
+      "profile": "http://www.a-tm.co.jp/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
