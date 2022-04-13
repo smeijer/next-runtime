@@ -6,7 +6,7 @@ import { TypedResponse } from '../responses';
 import { ParsedUrlQuery } from '../types/querystring';
 import { getResponseType, mergeResponse } from './response-utils';
 
-type NextFn = () => void;
+type NextFn = () => void | Promise<void>;
 
 export type MiddlewareFn<T extends ParsedUrlQuery = ParsedUrlQuery> = (
   context: RuntimeContext<T>,
