@@ -77,6 +77,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="http://mapleleaf.dev"><img src="https://avatars.githubusercontent.com/u/19603573?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Darius</b></sub></a><br /><a href="https://github.com/smeijer/next-runtime/commits?author=itsMapleLeaf" title="Code">💻</a> <a href="https://github.com/smeijer/next-runtime/commits?author=itsMapleLeaf" title="Tests">⚠️</a></td>
     <td align="center"><a href="http://umarahmed.dev"><img src="https://avatars.githubusercontent.com/u/8302959?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Umar Ahmed</b></sub></a><br /><a href="https://github.com/smeijer/next-runtime/commits?author=umar-ahmed" title="Code">💻</a></td>
     <td align="center"><a href="http://www.a-tm.co.jp/"><img src="https://avatars.githubusercontent.com/u/15067920?v=4?s=100" width="100px;" alt=""/><br /><sub><b>HIKARU KOBORI</b></sub></a><br /><a href="https://github.com/smeijer/next-runtime/commits?author=anneau" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/KoichiKiyokawa"><img src="https://avatars.githubusercontent.com/u/40315079?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Koichi Kiyokawa</b></sub></a><br /><a href="https://github.com/smeijer/next-runtime/commits?author=KoichiKiyokawa" title="Code">💻</a> <a href="https://github.com/smeijer/next-runtime/commits?author=KoichiKiyokawa" title="Tests">⚠️</a></td>
   </tr>
 </table>
 
