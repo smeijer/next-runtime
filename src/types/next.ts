@@ -1,44 +1,33 @@
-import { IncomingMessage, ServerResponse } from 'http';
+import type {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  GetServerSidePropsResult,
+  Redirect,
+} from 'next';
 
-import { ParsedUrlQuery } from './querystring';
+export type RedirectStatusCode = Extract<
+  Redirect,
+  { statusCode: number }
+>['statusCode'];
 
-export type RedirectStatusCode = 301 | 302 | 303 | 307 | 308;
-
-export type Redirect =
-  | {
-      statusCode: RedirectStatusCode;
-      destination: string;
-      basePath?: false;
-    }
-  | {
-      permanent: boolean;
-      destination: string;
-      basePath?: false;
-    };
-
-export type GetServerSidePropsContext<
-  Q extends ParsedUrlQuery = ParsedUrlQuery,
-> = {
-  req: IncomingMessage & {
-    cookies: Record<string, string>;
-  };
-  res: ServerResponse;
-  params?: Q;
-  query: ParsedUrlQuery;
+export type {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  GetServerSidePropsResult,
+  Redirect,
 };
 
-export type PropResult<P extends Record<string, unknown>> = { props: P };
-export type NotFoundResult = { notFound: true };
-export type RedirectResult = { redirect: Redirect };
+export type PropResult<P> = Extract<
+  GetServerSidePropsResult<P>,
+  { props: any }
+>;
 
-export type GetServerSidePropsResult<P extends Record<string, unknown>> =
-  | PropResult<P>
-  | RedirectResult
-  | NotFoundResult;
+export type NotFoundResult = Extract<
+  GetServerSidePropsResult<never>,
+  { notFound: any }
+>;
 
-export type GetServerSideProps<
-  P extends { [key: string]: any } = { [key: string]: any },
-  Q extends ParsedUrlQuery = ParsedUrlQuery,
-> = (
-  context: GetServerSidePropsContext<Q>,
-) => Promise<GetServerSidePropsResult<P>>;
+export type RedirectResult = Extract<
+  GetServerSidePropsResult<never>,
+  { redirect: any }
+>;
