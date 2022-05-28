@@ -20,7 +20,7 @@ export const getServerSideProps = handle({
   async get(context) {
     return json({
       name: 'Stephan Meijer',
-      country: 'The Netherlands',
+      country: 'Netherlands',
     });
   },
 });
@@ -71,7 +71,7 @@ Request the same page via curl, and you'll be served JSON instead.
 
 ```shell
 curl -H "Accept: application/json" https://example.com/page-path
-# » { name: 'Stephan Meijer', country: 'The Netherlands' }
+# » { name: 'Stephan Meijer', country: 'Netherlands' }
 ```
 
 ## Handle `POST` Requests
@@ -87,7 +87,7 @@ export const getServerSideProps = handle({
   async post(context) {
     return json({
       name: 'Stephan Meijer',
-      country: 'The Netherlands',
+      country: 'Netherlands',
     });
   },
 });
@@ -135,7 +135,7 @@ post data via the terminal:
 ```shell
 curl \
   -H "Content-Type: application/json" \
-  -d '{ "name": "Stephan", "country": "The Netherlands" }' \
+  -d '{ "name": "Stephan", "country": "Netherlands" }' \
   https://example.com/page-path
 ```
 
