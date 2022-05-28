@@ -6,18 +6,33 @@ const methodPredicate = (method: string) => {
     req.method().toLowerCase() === method.toLowerCase();
 };
 
+const interceptRequest = async (
+  requestPredicate: (req: Request) => boolean,
+  actionFn: Promise<void>,
+) => {
+  const request = page.waitForEvent('request', requestPredicate);
+  await actionFn;
+  return request.then((req) => req.response()).then((x) => x?.json());
+};
+
 test('submit buttons can override form method', async () => {
   await page.goto(`http://localhost:4000/form-with-named-buttons`);
 
   // click create button
-  await page.click('button[value="create"]');
-  await page.waitForEvent('response');
+  await interceptRequest(
+    methodPredicate('post'),
+    page.click('button[value="create"]'),
+  );
+
   expect(await page.textContent('#message')).toBe('created via post request');
   expect(await page.$('#error')).toBe(null);
 
   // click delete button
-  await page.click('button[value="delete"]');
-  await page.waitForEvent('response');
+  await interceptRequest(
+    methodPredicate('delete'),
+    page.click('button[value="delete"]'),
+  );
+
   expect(await page.textContent('#message')).toBe('deleted via delete request');
   expect(await page.$('#error')).toBe(null);
 });
@@ -25,12 +40,10 @@ test('submit buttons can override form method', async () => {
 test('submit buttons name is added to form data', async () => {
   await page.goto(`http://localhost:4000/form-with-named-buttons`);
 
-  const postRequest = page.waitForEvent('request', methodPredicate('post'));
-  await page.click(`button[value="create"]`);
-
-  const postResponse = await postRequest
-    .then((req) => req.response())
-    .then((x) => x?.json());
+  const postResponse = await interceptRequest(
+    methodPredicate('post'),
+    page.click(`button[value="create"]`),
+  );
 
   expect(postResponse).toEqual({
     message: `created via post request`,
@@ -40,12 +53,10 @@ test('submit buttons name is added to form data', async () => {
     },
   });
 
-  const deleteRequest = page.waitForEvent('request', methodPredicate('delete'));
-  await page.click(`button[value="delete"]`);
-
-  const deleteResponse = await deleteRequest
-    .then((req) => req.response())
-    .then((x) => x?.json());
+  const deleteResponse = await interceptRequest(
+    methodPredicate('delete'),
+    page.click(`button[value="delete"]`),
+  );
 
   expect(deleteResponse).toEqual({
     message: `deleted via delete request`,
