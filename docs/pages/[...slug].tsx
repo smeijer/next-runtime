@@ -178,10 +178,10 @@ function Sidebar({ selected }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="w-0 md:w-64">
+    <div className="w-0 lg:w-80">
       <div
         className={cn(
-          'flex-none z-10 fixed top-0 left-0 bottom-0 md:w-64 flex bg-opacity-25 bg-black',
+          'flex-none z-10 fixed top-0 left-0 bottom-0 lg:w-80 flex bg-opacity-25 bg-black',
           {
             'w-full': menuOpen,
             'w-0': !menuOpen,
@@ -193,9 +193,9 @@ function Sidebar({ selected }) {
       >
         <aside
           className={cn(
-            'flex-none flex flex-col w-64 bg-white border-r border-gray-200 h-screen transition md:translate-x-0',
+            'flex-none flex flex-col w-80 bg-white border-r border-gray-200 h-screen transition lg:translate-x-0',
             {
-              '-translate-x-64': !menuOpen,
+              '-translate-x-80': !menuOpen,
               'translate-x-0': menuOpen,
             },
           )}
@@ -234,7 +234,7 @@ function Sidebar({ selected }) {
 
       <button
         onClick={() => setMenuOpen((open) => !open)}
-        className="z-50 md:hidden bg-gray-800 hover:bg-gray-900 text-white fixed w-16 h-16 shadow-lg rounded-full bottom-6 right-6 flex items-center justify-center focus:outline-none"
+        className="z-50 lg:hidden bg-gray-800 hover:bg-gray-900 text-white fixed w-16 h-16 shadow-lg rounded-full bottom-6 right-6 flex items-center justify-center focus:outline-none"
       >
         <HamburgerMenuIcon width="20" height="20" />
       </button>
@@ -256,7 +256,7 @@ export default function DocsPage({ source, frontMatter, next, prev, page }) {
         <div className="flex flex-auto w-full max-w-6xl mx-auto">
           <Sidebar selected={page} />
 
-          <div className="overflow-x-hidden px-8 pb-16 mx-auto w-full max-w-prose">
+          <div className="overflow-x-hidden px-8 pb-16 mx-auto w-full max-w-[80ch]">
             <h1 className="text-5xl tracking-tight font-light mt-8 mb-6 relative text-gray-900">
               {frontMatter.title}
             </h1>

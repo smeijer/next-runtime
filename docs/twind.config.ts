@@ -36,6 +36,9 @@ const config: Configuration = {
         marginLeft: '.25em',
         marginRight: '.5em',
       },
+      '&.prose': {
+        maxWidth: '80ch',
+      },
     },
   },
   theme: {
