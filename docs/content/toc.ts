@@ -23,6 +23,9 @@ const toc: TocEntry[] = [
   { title: 'Form', slug: 'api/form' },
   { title: 'useFormSubmit', slug: 'api/use-form-submit' },
   { title: 'withNextRuntime', slug: 'api/with-next-runtime' },
+
+  { caption: 'FAQ' },
+  { title: 'Multiple forms on a page', slug: 'faq/multiple-forms-on-a-page' },
 ];
 
 export default toc;

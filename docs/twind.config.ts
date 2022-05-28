@@ -24,18 +24,25 @@ const config: Configuration = {
       '& > pre': {
         padding: 0,
       },
-      '& ul > li': {
+      '& ol': {
+        listStyle: 'decimal outside',
+      },
+
+      '& ul > li, & ol > li': {
         marginLeft: '2em',
         paddingLeft: '1em !important',
       },
-      '& ul > li > p:first-child > strong:first-child + em:nth-child(2)': {
-        marginLeft: '.5em',
-      },
-      '& ul > li > code:first-child + em:nth-child(2)': {
-        fontSize: '.875em',
-        marginLeft: '.25em',
-        marginRight: '.5em',
-      },
+      '& ul > li > p:first-child > strong:first-child + em:nth-child(2), & ol > li > p:first-child > strong:first-child + em:nth-child(2)':
+        {
+          marginLeft: '.5em',
+        },
+
+      '& ul > li > code:first-child + em:nth-child(2), & ol > li > code:first-child + em:nth-child(2)':
+        {
+          fontSize: '.875em',
+          marginLeft: '.25em',
+          marginRight: '.5em',
+        },
       '&.prose': {
         maxWidth: '80ch',
       },

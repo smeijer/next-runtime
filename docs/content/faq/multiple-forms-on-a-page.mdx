@@ -1,0 +1,159 @@
+---
+title: How do I handle multiple forms on a single page
+---
+
+When using [API routes](https://nextjs.org/docs/api-routes/introduction), forms
+often post to specific URLs depending on the action they perform. With
+next-runtime, we prefer to point the action to the current route, and collocate
+the UI and the server code that handles the form submission. Developers often
+wonder how to handle multiple actions in these scenarios.
+
+We support four solutions:
+
+1. Use named buttons to specify the action
+2. Use query parameters to specify the action
+3. Use a different HTTP method
+4. Post to a different route, and redirect back
+
+## Use named buttons to specify the action
+
+This is by far the simplest solution, and **the one we recommend**. When
+submitting forms, the value attribute of the submit button is included as form
+data. That value can be used to decide what action to take on the backend.
+
+```jsx
+import { handle, json } from 'next-runtime';
+import { Form, useFormSubmit } from 'next-runtime/form';
+
+export const getServerSideProps = handle({
+  async post({ req: { body } }) {
+    switch (body.action) {
+      case 'like':
+        return handleLike(body);
+      case 'bookmark':
+        return handleBookmark(body);
+      default:
+        throw new Error('unsupported action');
+    }
+  },
+});
+
+export default function Tweets() {
+  return (
+    <Form method="post">
+      <input type="hidden" name="id" value="nzpke31n" />
+
+      <button name="action" value="like" type="submit">
+        like
+      </button>
+
+      <button name="action" value="bookmark" type="submit">
+        bookmark
+      </button>
+    </Form>
+  );
+}
+```
+
+It's also possible to use a hidden input field, which is effectively the same.
+It simply moves the `name: value` pair to another element.
+
+```jsx
+<Form method="post">
+  <input type="hidden" name="action" value="like" />
+  <button type="submit">like</button>
+</Form>
+```
+
+## Use query parameters to specify the action
+
+As an alternative for the named buttons, it's also possible to use query
+parameters. Note that this does impact your
+[JSON api](/api/handle-requests#get-json-api), potentially making it feel less
+natural to your API consumers.
+
+```jsx
+import { handle, json } from 'next-runtime';
+import { Form, useFormSubmit } from 'next-runtime/form';
+
+export const getServerSideProps = handle({
+  async post({ query, req: { body } }) {
+    switch (query.action) {
+      case 'like':
+        return handleLike(body);
+      case 'bookmark':
+        return handleBookmark(body);
+      default:
+        throw new Error('unsupported action');
+    }
+  },
+});
+
+export default function Tweets() {
+  return (
+    <>
+      <Form method="post" action="?action=like">
+        <button type="submit">like</button>
+      </Form>
+      <Form method="post" action="?action=bookmark">
+        <button type="submit">bookmark</button>
+      </Form>
+    </>
+  );
+}
+```
+
+## Use a different HTTP method
+
+Note that this solution doesn't apply to all use cases, but it is important to
+get this right. When dealing with CRUD actions for the same entity, say
+`create`, `update` and `delete` todos, we recommend using the proper HTTP
+methods, as next-runtime methods automatically creates a matching
+[JSON api](<(/api/handle-requests#get-json-api)>) for you. This way, you'll
+ensure that the api feels natural to your consumers.
+
+```jsx
+import { handle, json } from 'next-runtime';
+import { Form, useFormSubmit } from 'next-runtime/form';
+
+export const getServerSideProps = handle({
+  async get() {
+    return json({});
+  },
+
+  async post({ req: { body } }) {
+    return handleCreate(body);
+  },
+
+  async delete({ req: { body } }) {
+    return handleDelete(body);
+  },
+});
+
+export default function Tweets() {
+  return (
+    <>
+      <h2>Send Tweet</h2>
+      <Form method="post">
+        <input type="text" name="message" />
+
+        <button type="submit">send</button>
+      </Form>
+
+      <h2>Delete Tweet</h2>
+      <Form method="delete">
+        <input type="hidden" name="id" value="nzpke31n" />
+
+        <button type="submit">delete</button>
+      </Form>
+    </>
+  );
+}
+```
+
+## Post to a different route, and redirect back
+
+This is an more advanced use case, that involves storing state, and redirecting
+to the location of origin. Please see the
+[redirect](/api/response-helpers#redirect) and [cookies](/api/cookies) helpers
+to make your life a bit easier.
