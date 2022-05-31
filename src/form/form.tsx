@@ -109,7 +109,6 @@ function FormComponent<Data>(
         formData.set(submitter.name, submitter.value);
       }
 
-      console.log('submit', formData, formAction, formMethod);
       submit({
         name: props.name,
         router,
@@ -120,11 +119,9 @@ function FormComponent<Data>(
         // need to wrap the callbacks like this so the latest ref value is accessed
         // at the time the callbacks are invoked, otherwise we could pass in a stale callback
         onError: (state) => {
-          console.log('err', state);
           onErrorRef.current?.(state as FormStateWithHelpers<Data>);
         },
         onSuccess: (state) => {
-          console.log('done');
           onSuccessRef.current?.(state as FormStateWithHelpers<Data>);
         },
       });
