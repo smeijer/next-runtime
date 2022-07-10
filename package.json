@@ -30,9 +30,9 @@
   "dependencies": {
     "@types/accepts": "^1",
     "@types/body-parser": "^1",
-    "@types/busboy": "^0",
+    "@types/busboy": "^0.2",
     "@types/bytes": "^3",
-    "@types/cookies": "^0",
+    "@types/cookies": "^0.7",
     "@types/debug": "^4",
     "@types/node-fetch": "^2",
     "@types/react": "^17",
