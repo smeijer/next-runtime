@@ -5,6 +5,7 @@
   "version": "2.4.1",
   "private": false,
   "repository": "https://github.com/smeijer/next-runtime",
+  "homepage": "https://next-runtime.meijer.ws",
   "scripts": {
     "build": "rimraf ./lib *.tsbuildinfo && tsc --project ./tsconfig.build.json",
     "lint": "eslint",
