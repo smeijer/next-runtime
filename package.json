@@ -4,6 +4,7 @@
   "author": "Stephan Meijer <stephan@meijer.ws>",
   "version": "2.4.1",
   "private": false,
+  "keywords": ["nextjs", "api", "forms"],
   "repository": "https://github.com/smeijer/next-runtime",
   "homepage": "https://next-runtime.meijer.ws",
   "scripts": {
