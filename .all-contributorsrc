@@ -69,8 +69,18 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "vasco3",
+      "name": "Gorka Cesium",
+      "avatar_url": "https://avatars.githubusercontent.com/u/804301?v=4",
+      "profile": "http://gorkacesium.substack.com",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
-  "skipCi": true
+  "skipCi": true,
+  "commitType": "docs"
 }
