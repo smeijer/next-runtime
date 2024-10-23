@@ -139,7 +139,7 @@ export async function bodyparser<TData extends Record<string, unknown>>(
 
   // busboy handles application/x-www-form-urlencoded and multipart/form-data,
   return new Promise((resolve, reject) => {
-    const busboy = new Busboy({
+    const busboy = Busboy({
       headers: req.headers,
       limits: {
         files: maxFileCount,
@@ -152,61 +152,79 @@ export async function bodyparser<TData extends Record<string, unknown>>(
 
     // We don't want to have these heavy ops when the developer didn't think of it.
     if (maxFileCount || options?.uploadDir || options?.onFile) {
-      busboy.on('file', async (field, file, name, encoding, type) => {
-        const value: File = { name, type, size: 0 };
+      busboy.on(
+        'file',
+        async (
+          field: string,
+          file: NodeJS.ReadableStream,
+          name: any,
+          encoding: any,
+          type: any,
+        ) => {
+          const value: File = { name, type, size: 0 };
 
-        // skip empty fields
-        if (!value.name) return file.resume();
+          // skip empty fields
+          if (!value.name) return file.resume();
 
-        if (limits.mimeType && !accepts({ name, type }, limits.mimeType)) {
-          errors.push({
-            name: 'FILE_TYPE_REJECTED',
-            message: `file "${value.name}" is not of type "${limits.mimeType}"`,
-          });
-          return file.resume();
-        }
+          const fileInfo = JSON.parse(JSON.stringify(value.name));
 
-        if (options?.onFile) {
-          options.onFile({ field, file: value, stream: file });
-        } else {
-          // write to disk when the user doesn't provide an onFile handler
-          await fs.promises.mkdir(uploadDir, { recursive: true });
-          value.path = path.join(
-            uploadDir,
-            path.basename(field) + '_' + picoid(17),
-          );
-          file.pipe(fs.createWriteStream(value.path));
-        }
-
-        file.on('data', (data) => {
-          value.size = data.length;
-        });
-
-        file.on('end', async () => {
-          if ((file as any).truncated) {
-            return errors.push({
-              name: 'FILE_SIZE_EXCEEDED',
-              message: `file "${value.name}" exceeds ${bytes(
-                maxFileSize || 0,
-              )}`,
+          if (limits.mimeType && !accepts({ name, type }, limits.mimeType)) {
+            errors.push({
+              name: 'FILE_TYPE_REJECTED',
+              message: `file "${fileInfo.filename}" is not of type "${limits.mimeType}"`,
             });
+            return file.resume();
           }
 
-          return setField(data, field, value);
-        });
-      });
+          if (options?.onFile) {
+            options.onFile({ field, file: value, stream: file });
+          } else {
+            // write to disk when the user doesn't provide an onFile handler
+            await fs.promises.mkdir(uploadDir, { recursive: true });
+            value.path = path.join(
+              uploadDir,
+              path.basename(field) + '_' + picoid(17),
+            );
+            file.pipe(fs.createWriteStream(value.path));
+          }
+
+          file.on('data', (data: string | any[]) => {
+            value.size = data.length;
+          });
+
+          file.on('end', async () => {
+            if ((file as any).truncated) {
+              return errors.push({
+                name: 'FILE_SIZE_EXCEEDED',
+                message: `file "${fileInfo.filename}" exceeds ${bytes(
+                  maxFileSize || 0,
+                )}`,
+              });
+            }
+
+            return setField(data, field, value);
+          });
+        },
+      );
     }
 
-    busboy.on('field', function (field, value, _, truncated) {
-      if (truncated) {
-        return errors.push({
-          name: 'FIELD_SIZE_EXCEEDED',
-          message: `field "${field}" exceeds ${bytes(maxFieldSize || 0)}`,
-        });
-      }
+    busboy.on(
+      'field',
+      function (field: any, value: unknown, _: any, truncated: any) {
+        if (truncated) {
+          const errorMessage = `field "${field}" exceeds ${bytes(
+            maxFieldSize || 0,
+          )}`;
 
-      setField(data, field, value);
-    });
+          return errors.push({
+            name: 'FIELD_SIZE_EXCEEDED',
+            message: errorMessage,
+          });
+        }
+
+        setField(data, field, value);
+      },
+    );
 
     busboy.on('filesLimit', () => {
       errors.push({
