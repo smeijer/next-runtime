@@ -81,6 +81,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/KoichiKiyokawa"><img src="https://avatars.githubusercontent.com/u/40315079?v=4?s=100" width="100px;" alt="Koichi Kiyokawa"/><br /><sub><b>Koichi Kiyokawa</b></sub></a><br /><a href="https://github.com/smeijer/next-runtime/commits?author=KoichiKiyokawa" title="Code">💻</a> <a href="https://github.com/smeijer/next-runtime/commits?author=KoichiKiyokawa" title="Tests">⚠️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://gorkacesium.substack.com"><img src="https://avatars.githubusercontent.com/u/804301?v=4?s=100" width="100px;" alt="Gorka Cesium"/><br /><sub><b>Gorka Cesium</b></sub></a><br /><a href="https://github.com/smeijer/next-runtime/commits?author=vasco3" title="Documentation">📖</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="http://efficientuser.com"><img src="https://avatars.githubusercontent.com/u/6157834?v=4?s=100" width="100px;" alt="Pandiyan Murugan"/><br /><sub><b>Pandiyan Murugan</b></sub></a><br /><a href="https://github.com/smeijer/next-runtime/commits?author=PandiyanCool" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 
