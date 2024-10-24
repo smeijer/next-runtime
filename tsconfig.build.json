@@ -16,7 +16,8 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "sourceMap": true,
-    "declaration": true
+    "declaration": true,
+    "noImplicitAny": false
   },
   "include": ["next-env.d.ts", "jest.d.ts", "./src/**/*"],
   "exclude": ["node_modules", "**/*.test.*"]

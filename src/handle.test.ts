@@ -185,6 +185,18 @@ test('handles field size limit', async () => {
   const data = new FormData();
   data.append('name', 'abcdef'); // longer than 5
 
+  const response = await fetch('/', {
+    method: 'POST',
+    headers: data.getHeaders(),
+    body: data,
+  });
+
+  expect(response.body).toEqual({
+    errors: [
+      { name: 'FIELD_SIZE_EXCEEDED', message: 'field "name" exceeds 5B' },
+    ],
+  });
+
   const jsonResponse = await fetch('/', {
     method: 'POST',
     body: { name: 'abcdef' },
