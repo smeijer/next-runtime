@@ -1,6 +1,6 @@
 import accepts from 'attr-accept';
 import bodyParser from 'body-parser';
-import Busboy from 'busboy';
+import createBusboy from 'busboy';
 import bytes from 'bytes';
 import fs from 'fs';
 import { IncomingMessage, ServerResponse } from 'http';
@@ -139,7 +139,7 @@ export async function bodyparser<TData extends Record<string, unknown>>(
 
   // busboy handles application/x-www-form-urlencoded and multipart/form-data,
   return new Promise((resolve, reject) => {
-    const busboy = new Busboy({
+    const busboy = createBusboy({
       headers: req.headers,
       limits: {
         files: maxFileCount,
@@ -152,13 +152,17 @@ export async function bodyparser<TData extends Record<string, unknown>>(
 
     // We don't want to have these heavy ops when the developer didn't think of it.
     if (maxFileCount || options?.uploadDir || options?.onFile) {
-      busboy.on('file', async (field, file, name, encoding, type) => {
-        const value: File = { name, type, size: 0 };
+      busboy.on('file', async (field, file, info) => {
+        const value: File = {
+          name: info.filename,
+          type: info.mimeType,
+          size: 0,
+        };
 
         // skip empty fields
         if (!value.name) return file.resume();
 
-        if (limits.mimeType && !accepts({ name, type }, limits.mimeType)) {
+        if (limits.mimeType && !accepts(value, limits.mimeType)) {
           errors.push({
             name: 'FILE_TYPE_REJECTED',
             message: `file "${value.name}" is not of type "${limits.mimeType}"`,
@@ -197,8 +201,8 @@ export async function bodyparser<TData extends Record<string, unknown>>(
       });
     }
 
-    busboy.on('field', function (field, value, _, truncated) {
-      if (truncated) {
+    busboy.on('field', function (field, value, info) {
+      if (info.nameTruncated || info.valueTruncated) {
         return errors.push({
           name: 'FIELD_SIZE_EXCEEDED',
           message: `field "${field}" exceeds ${bytes(maxFieldSize || 0)}`,
