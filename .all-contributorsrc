@@ -87,6 +87,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "MJsuriya",
+      "name": "Jeya Suriya Muthumari",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13235421?v=4",
+      "profile": "https://jsinfinitude.wordpress.com/",
+      "contributions": [
+        "maintenance"
+      ]
     }
   ],
   "contributorsPerLine": 7,

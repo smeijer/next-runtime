@@ -83,6 +83,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="http://efficientuser.com"><img src="https://avatars.githubusercontent.com/u/6157834?v=4?s=100" width="100px;" alt="Pandiyan Murugan"/><br /><sub><b>Pandiyan Murugan</b></sub></a><br /><a href="https://github.com/smeijer/next-runtime/commits?author=PandiyanCool" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://jsinfinitude.wordpress.com/"><img src="https://avatars.githubusercontent.com/u/13235421?v=4?s=100" width="100px;" alt="Jeya Suriya Muthumari"/><br /><sub><b>Jeya Suriya Muthumari</b></sub></a><br /><a href="#maintenance-MJsuriya" title="Maintenance">🚧</a></td>
     </tr>
   </tbody>
 </table>
