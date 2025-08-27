@@ -24,6 +24,7 @@
     "typecheck": "tsc --noEmit"
   },
   "main": "./index.js",
+  "types": "./lib/index.d.ts",
   "source": "./src/index.ts",
   "license": "MIT",
   "__exports": {
