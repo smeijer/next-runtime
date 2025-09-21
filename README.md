@@ -4,7 +4,7 @@ All you need to handle `POST` requests and file uploads in [`getServerSideProps`
 
 ## Documentation
 
-All documentation and guides can be found at [next-runtime.meijer.ws](https://next-runtime.meijer.ws/).
+All documentation and guides can be found at [next-runtime.meijer.works](https://next-runtime.meijer.works/).
 
 ## Features
 

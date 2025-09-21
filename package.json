@@ -10,7 +10,7 @@
     "forms"
   ],
   "repository": "https://github.com/smeijer/next-runtime",
-  "homepage": "https://next-runtime.meijer.ws",
+  "homepage": "https://next-runtime.meijer.works",
   "scripts": {
     "build": "rimraf ./lib *.tsbuildinfo && tsc --project ./tsconfig.build.json",
     "lint": "eslint",
