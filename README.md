@@ -56,12 +56,7 @@ export default function Home({ name, message }) {
 
 ## Sponsor
 
-Are you, or your employer, a satisfied user of this, or any of [my other projects](https://meijer.ws/open-source). Then please [consider sponsoring](https://github.com/sponsors/smeijer) my work so I can dedicate more time to maintaining this kind of projects.
-
-## Contributing
-
-Please check [contributing.md](/CONTRIBUTING.md). It contains info about the structure of this repo
-to help you get up and running.
+Are you, or your employer, a satisfied user of this, or any of [my other projects](https://meijer.works/projects). Then please [consider sponsoring](https://github.com/sponsors/smeijer) my work so I can dedicate more time to maintaining this kind of projects.
 
 ## Contributors
 
